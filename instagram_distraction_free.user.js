@@ -67,7 +67,7 @@
     function createSettingsUI() {
         const btn = document.createElement('button');
         btn.innerText = 'IG Clean';
-        btn.style.cssText = 'position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; opacity: 0.5; font-size: 12px;';
+        btn.style.cssText = 'position: fixed; bottom: 20px; left: 20px; z-index: 9999; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; opacity: 0.5; font-size: 12px;';
         btn.onmouseover = () => btn.style.opacity = '1';
         btn.onmouseout = () => btn.style.opacity = '0.5';
 
@@ -537,3 +537,4 @@
     }
 
 })();
+
