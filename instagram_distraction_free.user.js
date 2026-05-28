@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Instagram Distraction Free
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  Remove Sponsored and Suggested posts from Instagram
 // @author       Antigravity
 // @match        *://*.instagram.com/*
@@ -12,7 +12,7 @@
 (function () {
     'use strict';
 
-    console.log('[IG-Clean] v1.2 Script initialized. Hooking JSON.parse and Response.json...');
+    console.log('[IG-Clean] v1.3 Script initialized. Hooking JSON.parse and Response.json...');
 
     const originalParse = JSON.parse;
     const originalResponseJson = Response.prototype.json;
@@ -65,24 +65,48 @@
 
     // === SETTINGS UI ===
     function createSettingsUI() {
+        // Don't show button if user has permanently hidden it
+        if (localStorage.getItem('ig_clean_hidden') === 'true') {
+            console.log('[IG-Clean] Settings button permanently hidden. Run igCleanShow() in console to restore.');
+            return;
+        }
+
         const btn = document.createElement('button');
         btn.innerText = 'IG Clean';
+        btn.id = 'ig-clean-btn';
         btn.style.cssText = 'position: fixed; bottom: 20px; left: 20px; z-index: 9999; background: #333; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; opacity: 0.5; font-size: 12px;';
         btn.onmouseover = () => btn.style.opacity = '1';
         btn.onmouseout = () => btn.style.opacity = '0.5';
 
         btn.onclick = () => {
             const overlay = document.createElement('div');
+            overlay.id = 'ig-clean-overlay';
             overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; justify-content: center; align-items: center;';
 
             const modal = document.createElement('div');
-            modal.style.cssText = 'background: white; padding: 20px; border-radius: 8px; width: 340px; color: #000000 !important; font-family: sans-serif; maxHeight: 90vh; overflowY: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+            modal.style.cssText = 'background: white; padding: 20px; border-radius: 8px; width: 340px; color: #000000 !important; font-family: sans-serif; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: relative;';
+
+            // --- Header row with title + close button ---
+            const header = document.createElement('div');
+            header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;';
 
             const title = document.createElement('h3');
             title.innerText = 'IG Distraction Free Settings';
-            title.style.marginTop = '0';
-            title.style.color = 'black';
-            modal.appendChild(title);
+            title.style.cssText = 'margin: 0; color: black; font-size: 15px;';
+
+            const closeX = document.createElement('button');
+            closeX.innerText = '✕';
+            closeX.title = 'Close';
+            closeX.style.cssText = 'background: none; border: none; font-size: 16px; cursor: pointer; color: #555; line-height: 1; padding: 2px 6px; border-radius: 4px;';
+            closeX.onmouseover = () => closeX.style.background = '#eee';
+            closeX.onmouseout = () => closeX.style.background = 'none';
+            closeX.onclick = () => {
+                if (document.body.contains(overlay)) document.body.removeChild(overlay);
+            };
+
+            header.appendChild(title);
+            header.appendChild(closeX);
+            modal.appendChild(header);
 
             const createToggle = (key, label) => {
                 const wrapper = document.createElement('div');
@@ -125,21 +149,60 @@
             modal.appendChild(createToggle('disableExplore', 'Disable Explore Page & Sidebar'));
             modal.appendChild(createToggle('disableReels', 'Disable Reels Page & Sidebar'));
 
+            // --- Close & Reload button ---
             const closeBtn = document.createElement('button');
             closeBtn.innerText = 'Close & Reload';
             closeBtn.style.cssText = 'margin-top: 15px; padding: 8px 16px; background: #0095f6; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;';
             closeBtn.onclick = () => {
-                document.body.removeChild(overlay);
+                if (document.body.contains(overlay)) document.body.removeChild(overlay);
                 window.location.reload();
             };
             modal.appendChild(closeBtn);
 
+            const sep3 = document.createElement('hr');
+            sep3.style.margin = '12px 0 8px';
+            modal.appendChild(sep3);
+
+            // --- Hide button panel section ---
+            const dangerNote = document.createElement('p');
+            dangerNote.style.cssText = 'font-size: 11px; color: #888; margin: 0 0 8px; line-height: 1.4;';
+            dangerNote.innerText = 'Hide this button permanently (settings still apply). To restore, open the browser console and run: igCleanShow()';
+            modal.appendChild(dangerNote);
+
+            const hideBtn = document.createElement('button');
+            hideBtn.innerText = 'Hide This Button Forever';
+            hideBtn.style.cssText = 'padding: 7px 16px; background: #fff; color: #e0245e; border: 1.5px solid #e0245e; border-radius: 4px; cursor: pointer; width: 100%; font-size: 13px;';
+            hideBtn.onmouseover = () => { hideBtn.style.background = '#fff0f4'; };
+            hideBtn.onmouseout = () => { hideBtn.style.background = '#fff'; };
+            hideBtn.onclick = () => {
+                localStorage.setItem('ig_clean_hidden', 'true');
+                const floatingBtn = document.getElementById('ig-clean-btn');
+                if (floatingBtn) floatingBtn.remove();
+                if (document.body.contains(overlay)) document.body.removeChild(overlay);
+                console.log('[IG-Clean] Settings button hidden. Run igCleanShow() in the console to restore it.');
+            };
+            modal.appendChild(hideBtn);
+
             overlay.appendChild(modal);
             document.body.appendChild(overlay);
+
+            // Close on backdrop click
+            overlay.addEventListener('click', (e) => {
+                if (e.target === overlay) {
+                    if (document.body.contains(overlay)) document.body.removeChild(overlay);
+                }
+            });
         };
 
         document.body.appendChild(btn);
     }
+
+    // === CONSOLE RESTORE COMMAND ===
+    // Exposed globally so users can type igCleanShow() in DevTools console to bring the button back
+    window.igCleanShow = function () {
+        localStorage.removeItem('ig_clean_hidden');
+        console.log('[IG-Clean] Settings button restored. Reload the page to see it.');
+    };
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', createSettingsUI);
@@ -196,8 +259,6 @@
         if (sidebar) {
             sidebarObserver.observe(sidebar, { childList: true, subtree: true });
             console.log('[IG-Clean] Sidebar observer started');
-        } else {
-            // setTimeout(startSidebarObserver, 1000); // Retry logic can be aggressive, let's keep it simple
         }
     };
 
@@ -537,4 +598,3 @@
     }
 
 })();
-
