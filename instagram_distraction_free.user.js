@@ -1066,16 +1066,19 @@
     function hideSuggestedProfileCards(root) {
         if (!config.removeSuggested) return;
         for (const a of (root || document).querySelectorAll('a[href="/explore/people/"]')) {
-            // Walk up until we're at the same level as <article> siblings (feed-item level)
+            // The widget is in the right sidebar, not the feed.
+            // Structure: outer column → [account-switcher | suggested-section | footer]
+            // Walk up from the "See all" anchor until the parent also has a sibling containing
+            // the footer nav (identified by the stable about.instagram.com link).
             let el = a;
             while (el && el !== document.body) {
                 const parent = el.parentElement;
                 if (!parent) break;
-                if ([...parent.children].some(c => c !== el && c.tagName === 'ARTICLE')) {
+                if ([...parent.children].some(c => c !== el && c.querySelector('a[href*="about.instagram.com"]'))) {
                     if (!el.dataset.igHidden) {
                         el.dataset.igHidden = '1';
                         el.style.display = 'none';
-                        console.log('[IG-Clean] Hidden: Suggested for you profiles card');
+                        console.log('[IG-Clean] Hidden: Suggested for you sidebar section');
                     }
                     break;
                 }
