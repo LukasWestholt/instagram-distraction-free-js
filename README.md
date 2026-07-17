@@ -106,6 +106,52 @@ The settings panel adapts to your device: a standard modal on desktop, a bottom 
 - **Hide "Active Now" Presence Indicator**: Hides the green online dot and "Active X minutes ago" text in the DM list. Note: this uses best-effort CSS selectors.
 - **Session Post Limit**: Set a maximum number of posts per session (0 = unlimited). When the limit is reached, a full-screen interstitial requires a deliberate click to continue scrolling.
 
+## What We're Fighting
+
+Things Instagram broke on purpose and we're fixing out of spite.
+
+### Feed & Content Control
+
+**Remove "New Posts" / "Catch Up" interrupt banners** — That sticky banner that teleports you back to the top the moment you graze it with your thumb. It resets your scroll position just in case you were about to leave. A CSS rule targeting the banner container kills it dead.
+
+**Collapse "Collab" posts** — Partnership posts weren't enough — now two accounts can co-publish so the same ad shows up in the feed of both followerships simultaneously. Detect the `coauthor_producers` field in the post JSON and treat any populated coauthor list as suspect promotional content worth filtering.
+
+**Strip AI-generated content labels / hide AI slop posts** — Instagram labels AI-generated images with a tiny badge and then keeps the post front and center anyway. Detect `is_ai_generated` or equivalent flags in the post JSON and optionally blur or remove the post, because AI content farms are already taking over.
+
+**Filter out "Add Yours" sticker chain posts** — Viral sticker prompts ("photo of your shoes") appear in your feed from people you've never heard of. Detect the `add_yours` sticker metadata in the post JSON and filter accordingly.
+
+**Remove notification dots / "unseen" rings from the Stories tray** — The red ring on every story is a Skinner box lever. Your brain reads it as urgent and clears it compulsively. Removing the dot via CSS leaves stories accessible for people who want them while killing the manufactured urgency.
+
+### UI Chrome & Navigation
+
+**Hide the "Download the App" banner on mobile web** — A fat banner eating 15% of the screen every single cold load, asking you to install the app you already chose not to install. One CSS rule against the banner container and it's gone for good.
+
+**Remove the Threads cross-promo from the sidebar nav** — Instagram added a Threads shortcut to the main nav without asking. If you wanted Threads, you'd have it. Target the nav link by its `aria-label` or SVG path and remove it.
+
+**Hide Creator / "Boost Post" upsell buttons** — "Boost Post", "View Professional Dashboard", "Get more reach" — ads for Instagram's own monetization funnel, disguised as helpful tools, slapped onto every post card. CSS sweep across the button labels removes them and makes post cards look like they did a few years ago.
+
+**Strip the unread count from the browser tab title** — The tab title becomes "(3) Instagram" the moment someone double-taps your photo, pulling you back like a leash. A MutationObserver stripping the leading `(N)` from `document.title` keeps the tab quiet.
+
+**Suppress "Turn on Notifications" permission nag** — Instagram fires the browser notification permission dialog constantly — sometimes multiple times per session. Intercept and suppress `Notification.requestPermission` calls so the dialog never appears. You would have opted in already if you wanted this.
+
+**Option to hide the Stories bar entirely** — The bar is always full because Instagram makes sure of it with ads and filler accounts. A toggle to hide the entire bar, or at minimum filter it to only accounts on a whitelist, reclaims significant vertical space and removes a major distraction loop.
+
+### Dark Patterns & Engagement Manipulation
+
+**Hide like counts, view counts, and share counts** — Instagram's own research showed hiding like counts reduced anxiety, so they made it opt-in and buried the setting three menus deep. Strips count fields from feed JSON at the network layer so React never renders them; CSS covers pre-rendered content and non-feed pages.
+
+**Mute autoplay video sound by default** — Every autoplay Reel that blasts audio is a miniature ambush. Force `muted` on all video elements at load time and after dynamic injection, since Instagram re-injects them as you scroll.
+
+**Hide "Active Now" presence indicator** — Instagram tells everyone you've ever DM'd exactly when you're online. CSS hides the green dot on your own avatar and suppresses "Active X minutes ago" in the DM list so you stop being surveilled in real time.
+
+**Auto-dismiss cookie consent and GDPR popups** — The cookie banner and the privacy nag are deliberately re-triggered on every cold load to wear you into accepting tracking. A MutationObserver spots the modal and clicks the reject/dismiss button before you see it.
+
+**Session post limit with hard stop** — Instagram killed the "You're All Caught Up" wall because it worked — people left. A user-configurable post counter (default: 30) triggers a full-screen interstitial requiring a deliberate click to continue. Optionally shows a session timer so the time cost feels real.
+
+**Block DM read receipts ("Seen" indicator)** — The "Seen at X:XX" timestamp creates constant social pressure to respond immediately. Blocks `useIGDMarkThreadAsReadMutation` and `useIGDMarkThreadAsReadValidationMutation` via `X-FB-Friendly-Name` header matching in the fetch/XHR interceptor.
+
+**Block "Suggested for You" profiles** — The widget lives in the right sidebar, below the account-switcher and above the footer. Walks up from the "See all" anchor until finding the sidebar section root, then hides it entirely.
+
 ### Hiding the Button
 
 Once you have configured everything, you can permanently hide the **IG Clean** button:
