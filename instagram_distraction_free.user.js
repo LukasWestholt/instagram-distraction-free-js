@@ -48,6 +48,7 @@
         // Privacy & limits
         suppressNotificationNag: true,
         suppressErrorReports: true,
+        blockDMReadReceipts: false,
         autoDismissCookieBanner: true,
         muteAutoplayVideo: false,
         hideActiveNow: false,
@@ -76,44 +77,78 @@
         try { Notification.requestPermission = () => Promise.resolve('default'); } catch (_) {}
     }
 
-    if (config.suppressErrorReports) {
-        const ERROR_PATH = '/error/ig_web_error_reports/';
+    // === FETCH / XHR INTERCEPTOR ===
+    // Single hook handles all request-level blocking to avoid chaining multiple wrappers.
+    ;(function () {
+        const ERROR_PATH   = '/error/ig_web_error_reports/';
+        // Identified from HAR: these two mutations mark DMs as read.
+        // Matched via X-FB-Friendly-Name header (stable across doc_id changes).
+        const READ_MUTATIONS = new Set([
+            'useIGDMarkThreadAsReadMutation',
+            'useIGDMarkThreadAsReadValidationMutation',
+        ]);
 
-        // Block JavaScript-initiated fetch calls to the error reporting endpoint.
-        // NOTE: The browser's native Reporting API (Report-To header) sends reports
-        // outside of JavaScript — those can only be blocked at the network level,
-        // e.g. uBlock Origin rule: ||www.instagram.com/error/ig_web_error_reports/*
+        function getFriendlyName(init) {
+            const h = init?.headers;
+            if (!h) return '';
+            if (h instanceof Headers) return h.get('X-FB-Friendly-Name') || '';
+            return h['X-FB-Friendly-Name'] || h['x-fb-friendly-name'] || '';
+        }
+
         const _origFetch = window.fetch;
         window.fetch = function (resource, init) {
             const url = resource instanceof Request ? resource.url : String(resource);
-            if (url.includes(ERROR_PATH)) return Promise.resolve(new Response('', { status: 200 }));
+
+            if (config.suppressErrorReports && url.includes(ERROR_PATH))
+                return Promise.resolve(new Response('', { status: 200 }));
+
+            if (config.blockDMReadReceipts && url.includes('/api/graphql') &&
+                READ_MUTATIONS.has(getFriendlyName(init))) {
+                console.log('[IG-Clean] Blocked DM read receipt:', getFriendlyName(init));
+                return Promise.resolve(new Response(JSON.stringify({ data: {} }), {
+                    status: 200, headers: { 'Content-Type': 'application/json' },
+                }));
+            }
+
             return _origFetch.apply(this, arguments);
         };
 
-        // Belt-and-suspenders: block XHR too
+        // XHR belt-and-suspenders (Instagram may fall back to XHR on some paths)
         const _origOpen = XMLHttpRequest.prototype.open;
         XMLHttpRequest.prototype.open = function (method, url, ...rest) {
-            if (String(url).includes(ERROR_PATH)) this._igCleanBlocked = true;
+            this._igUrl = String(url);
             return _origOpen.apply(this, [method, url, ...rest]);
+        };
+        const _origSetHeader = XMLHttpRequest.prototype.setRequestHeader;
+        XMLHttpRequest.prototype.setRequestHeader = function (name, value) {
+            if (name === 'X-FB-Friendly-Name') this._igFriendlyName = value;
+            return _origSetHeader.apply(this, arguments);
         };
         const _origSend = XMLHttpRequest.prototype.send;
         XMLHttpRequest.prototype.send = function (...args) {
-            if (this._igCleanBlocked) return;
+            if (config.suppressErrorReports && this._igUrl?.includes(ERROR_PATH)) return;
+            if (config.blockDMReadReceipts && this._igUrl?.includes('/api/graphql') &&
+                READ_MUTATIONS.has(this._igFriendlyName)) {
+                console.log('[IG-Clean] Blocked DM read receipt (XHR):', this._igFriendlyName);
+                return;
+            }
             return _origSend.apply(this, args);
         };
 
-        // Stub ReportingObserver so Instagram's JS-side report collection is a no-op
-        try {
-            window.ReportingObserver = class {
-                observe() {}
-                disconnect() {}
-                takeRecords() { return []; }
-            };
-        } catch (_) {}
+        if (config.suppressErrorReports || config.blockDMReadReceipts)
+            sessionStorage.setItem('ig_clean_fetch_hooked', '1');
 
-        // Signal for health check
-        sessionStorage.setItem('ig_clean_fetch_hooked', '1');
-    }
+        // Stub ReportingObserver so Instagram's JS-side report collection is a no-op.
+        // NOTE: the browser's native Report-To mechanism sends outside JS — block that
+        // at the network level: ||www.instagram.com/error/ig_web_error_reports/*
+        if (config.suppressErrorReports) {
+            try {
+                window.ReportingObserver = class {
+                    observe() {} disconnect() {} takeRecords() { return []; }
+                };
+            } catch (_) {}
+        }
+    })();
 
     // === REDIRECTS ===
     const path = window.location.pathname;
@@ -319,6 +354,7 @@
         modal.appendChild(sectionLabel('Privacy & Limits'));
         modal.appendChild(createToggle('suppressNotificationNag', 'Suppress Notification Permission Nag'));
         modal.appendChild(createToggle('suppressErrorReports', 'Block Error & Telemetry Reports'));
+        modal.appendChild(createToggle('blockDMReadReceipts', 'Block DM Read Receipts ("Seen")'));
         modal.appendChild(createToggle('autoDismissCookieBanner', 'Auto-Dismiss Cookie Consent Banner'));
         modal.appendChild(createToggle('muteAutoplayVideo', 'Mute Autoplay Videos'));
         modal.appendChild(createToggle('hideActiveNow', 'Hide "Active Now" Presence Indicator'));
