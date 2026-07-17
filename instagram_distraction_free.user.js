@@ -1147,6 +1147,27 @@
         setTimeout(startObservers, 100);
     }
 
+    // === SPA NAVIGATION HOOK ===
+    // Instagram uses pushState/popState for routing. On back/forward, React replaces
+    // <main> and <nav> entirely, so the existing observer references become detached.
+    // Re-run scans and restart observers after every client-side navigation.
+    const onSpaNavigate = () => {
+        setTimeout(() => {
+            feedObserver.disconnect();
+            sidebarObserver.disconnect();
+            startObservers();
+            runInitialScans();
+        }, 800);
+    };
+
+    window.addEventListener('popstate', onSpaNavigate);
+
+    const _origPushState = history.pushState;
+    history.pushState = function (...args) {
+        _origPushState.apply(this, args);
+        onSpaNavigate();
+    };
+
     // Watch document.body directly for cookie/modal dialogs — they are appended
     // outside <main> so the feed observer misses them.
     const startBodyObserver = () => {
