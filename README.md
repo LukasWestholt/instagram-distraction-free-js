@@ -42,7 +42,7 @@ Once installed, the script runs automatically when you visit Instagram.com.
 
 Open the settings by clicking/tapping the **"IG Clean"** button:
 - **Desktop**: bottom-left corner
-- **Mobile / iOS**: bottom-right corner (larger tap target)
+- **Mobile / iOS**: bottom-right corner
 
 The settings panel adapts to your device: a standard modal on desktop, a bottom sheet with iOS-style toggles on mobile.
 
@@ -68,13 +68,13 @@ Once you have configured everything, you can permanently hide the **IG Clean** b
 1. Open the settings panel.
 2. Scroll to the bottom and tap **Hide This Button Forever**.
 
-Your settings remain active — only the button is hidden. To restore it, open the browser console (desktop: F12 → Console; iOS: Safari Web Inspector) and run:
+Your settings remain active — only the button is hidden. To restore it, visit this URL in your browser:
 
-```js
-igCleanShow()
+```
+https://www.instagram.com/#ig-clean-show
 ```
 
-Then reload the page.
+The script detects the hash, restores the button, and removes the hash from the URL automatically. Reload the page and the button will reappear.
 
 ### Multilingual Support
 

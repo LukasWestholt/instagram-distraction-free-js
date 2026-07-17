@@ -391,7 +391,13 @@
         document.body.appendChild(overlay);
     }
 
-    // === CONSOLE RESTORE COMMAND ===
+    // === RESTORE TRIGGERS ===
+    if (window.location.hash === '#ig-clean-show') {
+        localStorage.removeItem('ig_clean_hidden');
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+        console.log('[IG-Clean] Settings button restored via URL trigger.');
+    }
+
     window.igCleanShow = function () {
         localStorage.removeItem('ig_clean_hidden');
         console.log('[IG-Clean] Settings button restored. Reload the page to see it.');
