@@ -14,7 +14,9 @@
 (function () {
     'use strict';
 
-    console.log('[IG-Clean] v2.0 initialized.');
+    const LOG_PREFIX = '[IG-Clean v2.1]';
+
+    console.log(`${LOG_PREFIX} initialized.`);
 
     const originalParse = JSON.parse;
     const originalResponseJson = Response.prototype.json;
@@ -132,7 +134,7 @@
                 url.includes('/api/graphql') &&
                 READ_MUTATIONS.has(getFriendlyName(init))
             ) {
-                console.log('[IG-Clean] Blocked DM read receipt:', getFriendlyName(init));
+                console.log(`${LOG_PREFIX} Blocked DM read receipt:`, getFriendlyName(init));
                 return Promise.resolve(
                     new Response(JSON.stringify({ data: {} }), {
                         status: 200,
@@ -164,7 +166,7 @@
                 this._igUrl?.includes('/api/graphql') &&
                 READ_MUTATIONS.has(this._igFriendlyName)
             ) {
-                console.log('[IG-Clean] Blocked DM read receipt (XHR):', this._igFriendlyName);
+                console.log(`${LOG_PREFIX} Blocked DM read receipt (XHR):`, this._igFriendlyName);
                 return;
             }
             return _origSend.apply(this, args);
@@ -205,7 +207,7 @@
     // === SETTINGS UI ===
     function createSettingsUI() {
         if (localStorage.getItem('ig_clean_hidden') === 'true') {
-            console.log('[IG-Clean] Button hidden. Visit instagram.com/#ig-clean-show to restore.');
+            console.log(`${LOG_PREFIX} Button hidden. Visit instagram.com/#ig-clean-show to restore.`);
             return;
         }
 
@@ -588,7 +590,7 @@
     if (window.location.hash === '#ig-clean-show') {
         localStorage.removeItem('ig_clean_hidden');
         history.replaceState(null, '', window.location.pathname + window.location.search);
-        console.log('[IG-Clean] Settings button restored via URL trigger.');
+        console.log(`${LOG_PREFIX} Settings button restored via URL trigger.`);
     }
 
     if (document.readyState === 'loading') {
@@ -796,7 +798,7 @@
         for (const btn of (root || document).querySelectorAll('button')) {
             if (COOKIE_DISMISS_TEXTS.has(btn.textContent?.trim())) {
                 btn.click();
-                console.log('[IG-Clean] Auto-dismissed cookie banner');
+                console.log(`${LOG_PREFIX} Auto-dismissed cookie banner`);
                 return;
             }
         }
@@ -819,7 +821,7 @@
                 if (container && !container.dataset.igCleanHidden) {
                     container.style.display = 'none';
                     container.dataset.igCleanHidden = 'true';
-                    console.log('[IG-Clean] Hidden "New Posts" banner');
+                    console.log(`${LOG_PREFIX} Hidden "New Posts" banner`);
                 }
             }
         }
@@ -856,7 +858,7 @@
                 if (banner && banner !== document.body && !banner.dataset.igCleanHidden) {
                     banner.style.display = 'none';
                     banner.dataset.igCleanHidden = 'true';
-                    console.log('[IG-Clean] Hidden "Download App" banner');
+                    console.log(`${LOG_PREFIX} Hidden "Download App" banner`);
                 }
             }
         }
@@ -893,7 +895,7 @@
         if (tray && !tray.dataset.igCleanHidden) {
             tray.style.display = 'none';
             tray.dataset.igCleanHidden = 'true';
-            console.log('[IG-Clean] Hidden Stories bar');
+            console.log(`${LOG_PREFIX} Hidden Stories bar`);
         }
     }
 
@@ -952,7 +954,7 @@
         box.appendChild(continueBtn);
         overlay.appendChild(box);
         document.body.appendChild(overlay);
-        console.log(`[IG-Clean] Session limit of ${limit} posts reached.`);
+        console.log(`${LOG_PREFIX} Session limit of ${limit} posts reached.`);
     }
 
     // === DATA FILTERING ===
@@ -992,7 +994,7 @@
             if (config.filterCollabPosts) {
                 const producers = node.coauthor_producers ?? node.media?.coauthor_producers;
                 if (Array.isArray(producers) && producers.length > 0) {
-                    console.log('[IG-Clean] Removing COLLAB post');
+                    console.log(`${LOG_PREFIX} Removing COLLAB post`);
                     return false;
                 }
             }
@@ -1002,7 +1004,7 @@
             if (config.filterAiContent) {
                 const aiInfo = node.ai_label_info ?? node.media?.ai_label_info;
                 if (aiInfo?.gen_ai_detection_method) {
-                    console.log('[IG-Clean] Removing AI post:', aiInfo.gen_ai_detection_method);
+                    console.log(`${LOG_PREFIX} Removing AI post:`, aiInfo.gen_ai_detection_method);
                     return false;
                 }
             }
@@ -1017,7 +1019,7 @@
                     Array.isArray(stickers) &&
                     stickers.some((s) => s.type === 'add_yours' || s.bloks_sticker?.sticker_type === 'add_yours')
                 ) {
-                    console.log('[IG-Clean] Removing Add Yours post');
+                    console.log(`${LOG_PREFIX} Removing Add Yours post`);
                     return false;
                 }
             }
@@ -1036,7 +1038,7 @@
         });
 
         if (filtered.length < before) {
-            console.log(`[IG-Clean] ${contextName}: ${before} → ${filtered.length}`);
+            console.log(`${LOG_PREFIX} ${contextName}: ${before} → ${filtered.length}`);
         }
         return filtered;
     }
@@ -1062,7 +1064,7 @@
             }
             return true;
         });
-        if (filtered.length < before) console.log(`[IG-Clean] ${contextName}: ${before} → ${filtered.length}`);
+        if (filtered.length < before) console.log(`${LOG_PREFIX} ${contextName}: ${before} → ${filtered.length}`);
         return filtered;
     }
 
@@ -1147,7 +1149,7 @@
         try {
             if (data && typeof data === 'object') cleanFeedData(data);
         } catch (e) {
-            console.error('[IG-Clean] JSON.parse hook error:', e);
+            console.error(`${LOG_PREFIX} JSON.parse hook error:`, e);
         }
         return data;
     };
@@ -1157,14 +1159,14 @@
         try {
             if (data && typeof data === 'object') cleanFeedData(data);
         } catch (e) {
-            console.error('[IG-Clean] Response.json hook error:', e);
+            console.error(`${LOG_PREFIX} Response.json hook error:`, e);
         }
         return data;
     };
 
     setInterval(() => {
         if (cleanedCount.ads > 0 || cleanedCount.suggested > 0) {
-            console.log(`[IG-Clean] Stats — ${cleanedCount.ads} ads, ${cleanedCount.suggested} suggested removed`);
+            console.log(`${LOG_PREFIX} Stats — ${cleanedCount.ads} ads, ${cleanedCount.suggested} suggested removed`);
         }
     }, 30000);
 
@@ -1280,7 +1282,7 @@
         if (!article.classList.contains('ig-clean-blurred')) {
             article.classList.add('ig-clean-blurred');
             article.style.position = 'relative';
-            console.log(`[IG-Clean] Blurred: ${reason}`);
+            console.log(`${LOG_PREFIX} Blurred: ${reason}`);
         }
     }
 
@@ -1304,7 +1306,7 @@
                     if (!el.dataset.igHidden) {
                         el.dataset.igHidden = '1';
                         el.style.display = 'none';
-                        console.log('[IG-Clean] Hidden: Suggested for you sidebar section');
+                        console.log(`${LOG_PREFIX} Hidden: Suggested for you sidebar section`);
                     }
                     break;
                 }
@@ -1372,7 +1374,7 @@
             document.querySelector('div[role="navigation"]')?.closest('div');
         if (sidebar) sidebarObserver.observe(sidebar, { childList: true, subtree: true });
 
-        console.log('[IG-Clean] Observers started');
+        console.log(`${LOG_PREFIX} Observers started`);
     };
 
     if (document.readyState === 'loading') {

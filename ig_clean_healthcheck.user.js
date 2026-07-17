@@ -17,6 +17,8 @@
 (function () {
     'use strict';
 
+    const LOG_PREFIX = '[IG-Health v1.2]';
+
     const REPO = 'LukasWestholt/instagram-distraction-free-js';
     const BASE_BRANCH = 'main';
     const DOM_WAIT_MS = 8000; // wait for SPA to finish rendering
@@ -186,7 +188,7 @@
         const token = GM_getValue('ig_clean_gh_token', '');
         if (!token) {
             console.warn(
-                '[IG-Health] No GitHub token set — cannot file PR.\n' +
+                `${LOG_PREFIX} No GitHub token set — cannot file PR.\n` +
                     'Save one with: IG_HEALTH.setToken("ghp_your_token_here")\n' +
                     'Token needs: Contents (read/write) + Pull requests (write) on the repo.'
             );
@@ -199,7 +201,7 @@
         // Bail if a PR for this branch already exists
         const existing = await ghFetch('GET', `/repos/${REPO}/pulls?head=LukasWestholt:${branch}&state=open`);
         if (Array.isArray(existing.body) && existing.body.length > 0) {
-            console.log(`[IG-Health] PR already open for ${today}: ${existing.body[0].html_url}`);
+            console.log(`${LOG_PREFIX} PR already open for ${today}: ${existing.body[0].html_url}`);
             return;
         }
 
@@ -207,14 +209,14 @@
         const refRes = await ghFetch('GET', `/repos/${REPO}/git/ref/heads/${BASE_BRANCH}`);
         const sha = refRes.body?.object?.sha;
         if (!sha) {
-            console.error('[IG-Health] Could not read base branch SHA — check your token scope');
+            console.error(`${LOG_PREFIX} Could not read base branch SHA — check your token scope`);
             return;
         }
 
         // Create branch (422 = already exists, harmless)
         const branchRes = await ghFetch('POST', `/repos/${REPO}/git/refs`, { ref: `refs/heads/${branch}`, sha });
         if (branchRes.status !== 201 && branchRes.status !== 422) {
-            console.error('[IG-Health] Branch creation failed:', branchRes);
+            console.error(`${LOG_PREFIX} Branch creation failed:`, branchRes);
             return;
         }
 
@@ -235,7 +237,7 @@
             ...(fileSha ? { sha: fileSha } : {}),
         });
         if (putRes.status !== 200 && putRes.status !== 201) {
-            console.error('[IG-Health] Could not write HEALTH.md:', putRes);
+            console.error(`${LOG_PREFIX} Could not write HEALTH.md:`, putRes);
             return;
         }
 
@@ -248,9 +250,9 @@
         });
 
         if (prRes.body?.html_url) {
-            console.log(`[IG-Health] PR filed: ${prRes.body.html_url}`);
+            console.log(`${LOG_PREFIX} PR filed: ${prRes.body.html_url}`);
         } else {
-            console.error('[IG-Health] PR creation failed:', prRes.body);
+            console.error(`${LOG_PREFIX} PR creation failed:`, prRes.body);
         }
     }
 
@@ -264,7 +266,7 @@
             const found = !!document.querySelector(check.selector);
             const broken = check.invert ? found : !found;
             if (broken) {
-                console.warn(`[IG-Health] BROKEN — ${check.selector}\n  ${check.desc}`);
+                console.warn(`${LOG_PREFIX} BROKEN — ${check.selector}\n  ${check.desc}`);
                 domFailures.push(check);
             }
         }
@@ -276,7 +278,7 @@
         for (const check of RUNTIME_CHECKS) {
             if (!check.active()) continue;
             if (sessionStorage.getItem(check.sessionKey) !== '1') {
-                console.warn(`[IG-Health] BROKEN — ${check.id}\n  ${check.desc}`);
+                console.warn(`${LOG_PREFIX} BROKEN — ${check.id}\n  ${check.desc}`);
                 runtimeFailures.push(check);
             }
         }
@@ -284,15 +286,15 @@
         // Log summary
         const total = domFailures.length + runtimeFailures.length;
         if (total === 0) {
-            console.log('[IG-Health] ✓ All checks passed');
+            console.log(`${LOG_PREFIX} ✓ All checks passed`);
             return;
         }
-        console.warn(`[IG-Health] ${total} check(s) failed — see above for details`);
+        console.warn(`${LOG_PREFIX} ${total} check(s) failed — see above for details`);
 
         // Rate-limit: one PR per day
         const today = new Date().toISOString().slice(0, 10);
         if (GM_getValue(REPORT_KEY, '') === today) {
-            console.warn('[IG-Health] Already reported today — skipping PR');
+            console.warn(`${LOG_PREFIX} Already reported today — skipping PR`);
             return;
         }
         GM_setValue(REPORT_KEY, today);
@@ -308,15 +310,15 @@
     window.IG_HEALTH = {
         setToken: (t) => {
             GM_setValue('ig_clean_gh_token', t);
-            console.log('[IG-Health] Token saved.');
+            console.log(`${LOG_PREFIX} Token saved.`);
         },
         getToken: () => GM_getValue('ig_clean_gh_token', '(not set)'),
         runNow: () => runChecks(),
         clearReport: () => {
             GM_setValue(REPORT_KEY, '');
-            console.log('[IG-Health] Daily-report lock cleared.');
+            console.log(`${LOG_PREFIX} Daily-report lock cleared.`);
         },
     };
 
-    console.log('[IG-Health] Loaded. Run IG_HEALTH.setToken("ghp_...") to enable GitHub PR filing.');
+    console.log(`${LOG_PREFIX} Loaded. Run IG_HEALTH.setToken("ghp_...") to enable GitHub PR filing.`);
 })();
