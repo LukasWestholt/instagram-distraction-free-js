@@ -9,6 +9,8 @@
 // @grant        GM_xmlhttpRequest
 // @connect      api.github.com
 // @run-at       document-idle
+// @updateURL    https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/ig_clean_healthcheck.user.js
+// @downloadURL  https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/ig_clean_healthcheck.user.js
 // ==/UserScript==
 
 (function () {

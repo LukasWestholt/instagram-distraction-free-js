@@ -7,6 +7,8 @@
 // @match        *://*.instagram.com/*
 // @run-at       document-start
 // @grant        none
+// @updateURL    https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js
+// @downloadURL  https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js
 // ==/UserScript==
 
 (function () {
@@ -497,11 +499,6 @@
         console.log('[IG-Clean] Settings button restored via URL trigger.');
     }
 
-    window.igCleanShow = function () {
-        localStorage.removeItem('ig_clean_hidden');
-        console.log('[IG-Clean] Settings button restored. Reload the page to see it.');
-    };
-
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', createSettingsUI);
     } else {
@@ -769,6 +766,7 @@
         hideDownloadAppBanner(root);
         hideBoostButtons(root);
         muteVideos(root);
+        hideSuggestedProfileCards(root);
     }
 
     // === SESSION POST LIMIT ===
@@ -1048,6 +1046,28 @@
 
     function scanForAdsInDOM(root) {
         (root || document).querySelectorAll('article').forEach(processArticle);
+        hideSuggestedProfileCards(root);
+    }
+
+    function hideSuggestedProfileCards(root) {
+        if (!config.removeSuggested) return;
+        for (const a of (root || document).querySelectorAll('a[href="/explore/people/"]')) {
+            // Walk up until we're at the same level as <article> siblings (feed-item level)
+            let el = a;
+            while (el && el !== document.body) {
+                const parent = el.parentElement;
+                if (!parent) break;
+                if ([...parent.children].some(c => c !== el && c.tagName === 'ARTICLE')) {
+                    if (!el.dataset.igHidden) {
+                        el.dataset.igHidden = '1';
+                        el.style.display = 'none';
+                        console.log('[IG-Clean] Hidden: Suggested for you profiles card');
+                    }
+                    break;
+                }
+                el = parent;
+            }
+        }
     }
 
     // === STARTUP SCANS ===

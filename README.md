@@ -11,28 +11,21 @@ Instagram Distraction Free - Remove suggested and sponsored posts, reels and exp
    - [Tampermonkey for Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
    - [Tampermonkey for Firefox Android](https://addons.mozilla.org/en-US/android/addon/tampermonkey/)
 
-2. Install the userscript:
-   - Create a new script in Tampermonkey.
-   - Copy the contents of `instagram_distraction_free.user.js` into the editor.
-   - Save the script (Ctrl+S or File > Save).
+2. Click **[Install Script](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js)** — Tampermonkey will intercept the link and show the install dialog.
 
 ### iOS (Safari)
 
-Tampermonkey is available for Safari on iOS. Because Safari restricts extension capabilities, the setup requires a few extra steps.
-
-1. **Install Tampermonkey from the App Store**
-   - Search for *Tampermonkey* or install it directly from the [App Store](https://apps.apple.com/us/app/tampermonkey/id6738342400).
-   - You could also try out *Userscripts* from the [App Store](https://apps.apple.com/us/app/userscripts/id1463298887).
+1. **Install a userscript manager from the App Store**
+   - [Tampermonkey](https://apps.apple.com/us/app/tampermonkey/id6738342400)
+   - [Userscripts](https://apps.apple.com/us/app/userscripts/id1463298887)
 
 2. **Enable the extension in Safari**
    - Open **Settings** → **Apps** → **Safari** → **Extensions**.
-   - Tap **Tampermonkey** and switch it on.
+   - Tap your chosen extension and switch it on.
    - Under *Allow Extension to Read and Modify Webpages* set **instagram.com** (or *All Websites*) to **Allow**.
 
 3. **Install the userscript**
-   - Open the Tampermonkey app and tap **Create new script**.
-   - Delete the placeholder content and paste the full contents of `instagram_distraction_free.user.js`.
-   - Tap **Save** (the floppy disk icon, top right).
+   - Tap **[Install Script](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js)** in Safari — the extension will intercept the link and show the install dialog.
 
 4. **Open Instagram in Safari**
    - Go to `instagram.com` in Safari — the script activates automatically.
