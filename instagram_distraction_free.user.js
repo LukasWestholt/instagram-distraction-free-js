@@ -48,6 +48,7 @@
         // Privacy & limits
         suppressNotificationNag: true,
         suppressErrorReports: true,
+        suppressSelfXSSWarning: true,
         blockDMReadReceipts: false,
         autoDismissCookieBanner: true,
         muteAutoplayVideo: false,
@@ -75,6 +76,19 @@
 
     if (config.suppressNotificationNag) {
         try { Notification.requestPermission = () => Promise.resolve('default'); } catch (_) {}
+    }
+
+    if (config.suppressSelfXSSWarning) {
+        // Instagram fires two console.log calls when devtools is open:
+        //   "%cStop!" (big red CSS) + a paragraph about social engineering.
+        // Useless noise for anyone who deliberately installed a userscript.
+        const _origLog = console.log;
+        console.log = function (...args) {
+            const first = typeof args[0] === 'string' ? args[0] : '';
+            if (first === '%cStop!' || first.includes('browser feature intended for developers') || first.includes('selfxss'))
+                return;
+            return _origLog.apply(console, args);
+        };
     }
 
     // === FETCH / XHR INTERCEPTOR ===
@@ -365,6 +379,7 @@
 
         modal.appendChild(sectionLabel('Privacy & Limits'));
         modal.appendChild(createToggle('suppressNotificationNag', 'Suppress Notification Permission Nag'));
+        modal.appendChild(createToggle('suppressSelfXSSWarning', 'Suppress "Stop!" Console Warning'));
         modal.appendChild(createToggle('suppressErrorReports', 'Block Error & Telemetry Reports'));
         modal.appendChild(createToggle('blockDMReadReceipts', 'Block DM Read Receipts ("Seen")'));
         modal.appendChild(createToggle('autoDismissCookieBanner', 'Auto-Dismiss Cookie Consent Banner'));
