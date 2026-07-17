@@ -21,7 +21,8 @@ Instagram Distraction Free - Remove suggested and sponsored posts, reels and exp
 Tampermonkey is available for Safari on iOS. Because Safari restricts extension capabilities, the setup requires a few extra steps.
 
 1. **Install Tampermonkey from the App Store**
-   - Search for *Tampermonkey* or install it directly from the [App Store](https://apps.apple.com/app/tampermonkey/id1482490089).
+   - Search for *Tampermonkey* or install it directly from the [App Store](https://apps.apple.com/us/app/tampermonkey/id6738342400).
+   - You could also try out *Userscripts* from the [App Store](https://apps.apple.com/us/app/userscripts/id1463298887).
 
 2. **Enable the extension in Safari**
    - Open **Settings** → **Apps** → **Safari** → **Extensions**.
@@ -136,4 +137,7 @@ The script hooks into the browser's native `JSON.parse` function and the `Respon
 4.  **Modification**: Matching items are removed from the array. The cleaned data object is then passed back to the application.
 5.  **Result**: The application renders the feed using the sanitized data, unaware that ads or suggestions ever existed.
 
-This approach prevents the "pop-in" effect often seen with CSS-only blockers and saves time/resources by not rendering unwanted media. A CSS blur fallback is included to handle pre-rendered content on the initial page load that might bypass the data filter.
+This approach prevents the "pop-in" effect often seen with CSS-only blockers and saves time/resources by not
+rendering unwanted media.
+A CSS blur fallback is included to handle pre-rendered content on the initial page load that
+might bypass the data filter.
