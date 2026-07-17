@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IG Clean — Health Check
 // @namespace    ig-clean-healthcheck
-// @version      1.1
+// @version      1.2
 // @description  Verifies IG Clean selectors still resolve; opens a GitHub PR when they break
 // @author       Lukas Westholt
 // @match        https://www.instagram.com/*
@@ -68,8 +68,12 @@
         {
             id: 'like_counts',
             selector: '[aria-label$=" likes"], [aria-label$=" like"], [aria-label*=" likes,"], [aria-label*=" views"]',
-            desc: 'Like / view count elements — used by hideLikeCounts (best-effort CSS). No match means Instagram changed the aria-label format or no posts with counts are in view.',
-            active: isHome && igConfig.hideLikeCounts === true,
+            desc: 'Like / view count elements still in DOM — JSON scrubbing ran but counts were not removed (CSS fallback also failed)',
+            // JSON scrubbing nulls out count fields so React never renders these elements.
+            // Absence of elements is a SUCCESS. Only flag if the JSON layer ran (feed seen)
+            // AND count elements are still present, meaning both layers failed.
+            active: isHome && igConfig.hideLikeCounts === true && sessionStorage.getItem('ig_clean_feed_seen') === '1',
+            invert: true,
         },
         // Threads link is inside a "More apps from Meta" popup (role="dialog") that only
         // renders on click — never present at check time, so DOM-checking it always fails.
@@ -240,7 +244,9 @@
         const domFailures = [];
         for (const check of DOM_CHECKS) {
             if (!check.active) continue;
-            if (!document.querySelector(check.selector)) {
+            const found = !!document.querySelector(check.selector);
+            const broken = check.invert ? found : !found;
+            if (broken) {
                 console.warn(`[IG-Health] BROKEN — ${check.selector}\n  ${check.desc}`);
                 domFailures.push(check);
             }
