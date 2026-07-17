@@ -54,13 +54,47 @@ The settings panel adapts to your device: a standard modal on desktop, a bottom 
 
 ### Configuration Options
 
+#### Sponsored & Suggested
+
 - **Remove Sponsored Posts**: Removes ads from the feed at the network layer before they are rendered.
 - **Blur Sponsored Posts**: Visually blurs ads that slip through the network filter (useful for the initial page load).
 - **Remove Suggested Posts**: Removes "Suggested for you" and "Suggested users" cards at the network layer.
 - **Blur Suggested Posts**: Visually blurs suggested content that slips through the network filter.
+
+#### Navigation
+
 - **Default to "Following" Feed**: Automatically redirects the home page to the Following-only feed, eliminating most algorithmic content server-side.
 - **Disable Explore Page**: Redirects `/explore/` URLs to the home page and hides the Explore link in the sidebar.
 - **Disable Reels Page**: Redirects `/reels/` URLs to the home page and hides the Reels link in the sidebar.
+- **Hide Threads Link in Sidebar**: Removes the Threads shortcut Instagram added to the main navigation without asking.
+
+#### Feed Content
+
+- **Hide "New Posts" Banner**: Removes the sticky banner that snaps you back to the top of the feed mid-scroll.
+- **Filter Collab / Partnership Posts**: Removes co-authored posts at the network layer. These are often cross-promoted sponsored content from two accounts posting simultaneously to both audiences.
+- **Filter AI-Generated Posts**: Removes posts flagged by Instagram as AI-generated (both `AI_CREATED` and `CLASSIFIER_SCORE_HIGH` detections).
+- **Filter "Add Yours" Chain Posts**: Removes viral sticker prompt posts that surface from accounts you don't follow.
+
+#### Stories
+
+- **Hide Stories Bar Entirely**: Hides the full horizontal stories tray to reclaim vertical space and remove the notification loop.
+- **Hide Story Ring Notification Dots**: Hides the colored gradient ring around unseen stories, removing the manufactured urgency without removing stories themselves.
+
+#### Interface
+
+- **Hide "Download App" Banner**: Removes the persistent banner on mobile web asking you to install the app you already chose not to install.
+- **Hide "Boost Post" Upsell Buttons**: Removes "Boost Post", "View Professional Dashboard", and similar monetization prompts from post cards.
+- **Strip Unread Count from Tab Title**: Removes the `(3)` notification badge from the browser tab title so the tab stays quiet.
+- **Hide Like & View Counts**: Hides engagement metrics via CSS. Note: Instagram's like count display varies; this is best-effort.
+- **Hide Floating DM Button (Mobile)**: Removes the floating direct messages button on mobile web.
+
+#### Privacy & Limits
+
+- **Suppress Notification Permission Nag**: Blocks Instagram's repeated browser notification permission dialogs before they appear.
+- **Auto-Dismiss Cookie Consent Banner**: Automatically clicks the decline/reject button on cookie and privacy dialogs, including multilingual variants.
+- **Mute Autoplay Videos**: Forces all video elements to muted, including ones dynamically injected as you scroll.
+- **Hide "Active Now" Presence Indicator**: Hides the green online dot and "Active X minutes ago" text in the DM list. Note: this uses best-effort CSS selectors.
+- **Session Post Limit**: Set a maximum number of posts per session (0 = unlimited). When the limit is reached, a full-screen interstitial requires a deliberate click to continue scrolling.
 
 ### Hiding the Button
 
