@@ -29,6 +29,11 @@
     const isHome    = location.pathname === '/';
     const isMobile  = window.innerWidth < 768;
 
+    const igConfig  = (() => {
+        try { return JSON.parse(localStorage.getItem('ig_clean_config')) || {}; }
+        catch (_) { return {}; }
+    })();
+
     const DOM_CHECKS = [
         {
             id: 'story_tray',
@@ -59,6 +64,12 @@
             selector: 'a[href="/reels/"]',
             desc: 'Reels nav link — used by disableReels sidebar hiding',
             active: !location.pathname.startsWith('/reels'),
+        },
+        {
+            id: 'like_counts',
+            selector: '[aria-label$=" likes"], [aria-label$=" like"], [aria-label*=" likes,"], [aria-label*=" views"]',
+            desc: 'Like / view count elements — used by hideLikeCounts (best-effort CSS). No match means Instagram changed the aria-label format or no posts with counts are in view.',
+            active: isHome && igConfig.hideLikeCounts === true,
         },
         // Threads link is inside a "More apps from Meta" popup (role="dialog") that only
         // renders on click — never present at check time, so DOM-checking it always fails.
