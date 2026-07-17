@@ -524,8 +524,11 @@
             let container = link.closest('span[class*="html-span"]') || link.parentElement?.parentElement?.parentElement?.parentElement;
             if (!container) container = link.closest('div.x1n2onr6');
             if (container && !container.dataset.igCleanHidden) {
-                container.style.display = 'none';
                 container.dataset.igCleanHidden = 'true';
+                // The <span> is the content holder; its parent <div> is the actual flex item.
+                // Hiding only the span leaves the wrapper div's space intact.
+                const toHide = container.tagName === 'SPAN' ? (container.parentElement || container) : container;
+                toHide.style.display = 'none';
             }
         }
     }
