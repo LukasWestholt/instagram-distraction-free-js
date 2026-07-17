@@ -7,41 +7,50 @@ Instagram Distraction Free - Remove suggested and sponsored posts, reels and exp
 ### Desktop/Android (Chrome / Firefox)
 
 1. Install the Tampermonkey browser extension:
-   - [Tampermonkey for Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
-   - [Tampermonkey for Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
-   - [Tampermonkey for Firefox Android](https://addons.mozilla.org/en-US/android/addon/tampermonkey/)
+    - [Tampermonkey for Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
+    - [Tampermonkey for Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
+    - [Tampermonkey for Firefox Android](https://addons.mozilla.org/en-US/android/addon/tampermonkey/)
 
-2. Click **[Install Script](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js)** — Tampermonkey will intercept the link and show the install dialog.
+2. Click
+   **[Install Script](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js)**
+   — Tampermonkey will intercept the link and show the install dialog.
 
 ### iOS (Safari)
 
 1. **Install a userscript manager from the App Store**
-   - [Tampermonkey](https://apps.apple.com/us/app/tampermonkey/id6738342400)
-   - [Userscripts](https://apps.apple.com/us/app/userscripts/id1463298887)
+    - [Tampermonkey](https://apps.apple.com/us/app/tampermonkey/id6738342400)
+    - [Userscripts](https://apps.apple.com/us/app/userscripts/id1463298887)
 
 2. **Enable the extension in Safari**
-   - Open **Settings** → **Apps** → **Safari** → **Extensions**.
-   - Tap your chosen extension and switch it on.
-   - Under *Allow Extension to Read and Modify Webpages* set **instagram.com** (or *All Websites*) to **Allow**.
+    - Open **Settings** → **Apps** → **Safari** → **Extensions**.
+    - Tap your chosen extension and switch it on.
+    - Under _Allow Extension to Read and Modify Webpages_ set **instagram.com** (or _All Websites_) to **Allow**.
 
 3. **Install the userscript**
-   - **Tampermonkey**: Tap **[Install Script](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js)** in Safari — Tampermonkey will intercept the link and show the install dialog.
-   - **Userscripts**: Open the app and configure a sync folder (iCloud or local). Then long-press **[Install Script](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js)** → *Download Linked File* and save it to that folder. Userscripts picks it up automatically.
+    - **Tampermonkey**: Tap
+      **[Install Script](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js)**
+      in Safari — Tampermonkey will intercept the link and show the install dialog.
+    - **Userscripts**: Open the app and configure a sync folder (iCloud or local). Then long-press
+      **[Install Script](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js)**
+      → _Download Linked File_ and save it to that folder. Userscripts picks it up automatically.
 
 4. **Open Instagram in Safari**
-   - Go to `instagram.com` in Safari — the script activates automatically.
-   - A small **IG Clean** button appears in the bottom-right corner for settings.
+    - Go to `instagram.com` in Safari — the script activates automatically.
+    - A small **IG Clean** button appears in the bottom-right corner for settings.
 
 ### Optional: Health Check Script
 
-The health check script monitors whether IG Clean's selectors still resolve after Instagram updates, and can automatically file a GitHub issue when something breaks.
+The health check script monitors whether IG Clean's selectors still resolve after Instagram updates, and can
+automatically file a GitHub issue when something breaks.
 
-- **[Install Health Check](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/ig_clean_healthcheck.user.js)** — install the same way as the main script above.
+- **[Install Health Check](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/ig_clean_healthcheck.user.js)**
+  — install the same way as the main script above.
 
-To enable automatic GitHub issue filing, paste a personal access token (needs *Contents* and *Pull requests* write access on this repo) into the browser console once:
+To enable automatic GitHub issue filing, paste a personal access token (needs _Contents_ and _Pull requests_ write
+access on this repo) into the browser console once:
 
 ```js
-IG_HEALTH.setToken("ghp_your_token_here")
+IG_HEALTH.setToken('ghp_your_token_here');
 ```
 
 ## Usage
@@ -49,12 +58,14 @@ IG_HEALTH.setToken("ghp_your_token_here")
 Once installed, the script runs automatically when you visit Instagram.com.
 
 Open the settings by clicking/tapping the **"IG Clean"** button:
+
 - **Desktop**: bottom-left corner
 - **Mobile / iOS**: bottom-right corner
 
 The settings panel adapts to your device: a standard modal on desktop, a bottom sheet with iOS-style toggles on mobile.
 
 **Closing the panel:**
+
 - Tap/click the **✕** button in the top-right of the panel to close without reloading.
 - Tap/click the backdrop (outside the panel) to close without reloading.
 - Tap/click **Done** / **Close & Reload** to save changes and reload the page.
@@ -70,7 +81,8 @@ The settings panel adapts to your device: a standard modal on desktop, a bottom 
 
 #### Navigation
 
-- **Default to "Following" Feed**: Automatically redirects the home page to the Following-only feed, eliminating most algorithmic content server-side.
+- **Default to "Following" Feed**: Automatically redirects the home page to the Following-only feed, eliminating most
+  algorithmic content server-side.
 - **Disable Explore Page**: Redirects `/explore/` URLs to the home page and hides the Explore link in the sidebar.
 - **Disable Reels Page**: Redirects `/reels/` URLs to the home page and hides the Reels link in the sidebar.
 - **Hide Threads Link in Sidebar**: Removes the Threads shortcut Instagram added to the main navigation without asking.
@@ -78,33 +90,55 @@ The settings panel adapts to your device: a standard modal on desktop, a bottom 
 #### Feed Content
 
 - **Hide "New Posts" Banner**: Removes the sticky banner that snaps you back to the top of the feed mid-scroll.
-- **Filter Collab / Partnership Posts**: Removes co-authored posts at the network layer. These are often cross-promoted sponsored content from two accounts posting simultaneously to both audiences.
-- **Filter AI-Generated Posts**: Removes posts flagged by Instagram as AI-generated (both `AI_CREATED` and `CLASSIFIER_SCORE_HIGH` detections).
+- **Filter Collab / Partnership Posts**: Removes co-authored posts at the network layer. These are often cross-promoted
+  sponsored content from two accounts posting simultaneously to both audiences.
+- **Filter AI-Generated Posts**: Removes posts flagged by Instagram as AI-generated (both `AI_CREATED` and
+  `CLASSIFIER_SCORE_HIGH` detections).
 - **Filter "Add Yours" Chain Posts**: Removes viral sticker prompt posts that surface from accounts you don't follow.
 
 #### Stories
 
-- **Hide Stories Bar Entirely**: Hides the full horizontal stories tray to reclaim vertical space and remove the notification loop.
-- **Hide Story Ring Notification Dots**: Hides the colored gradient ring around unseen stories, removing the manufactured urgency without removing stories themselves.
+- **Hide Stories Bar Entirely**: Hides the full horizontal stories tray to reclaim vertical space and remove the
+  notification loop.
+- **Hide Story Ring Notification Dots**: Hides the colored gradient ring around unseen stories, removing the
+  manufactured urgency without removing stories themselves.
 
 #### Interface
 
-- **Hide "Download App" Banner**: Removes the persistent banner on mobile web asking you to install the app you already chose not to install.
-- **Hide "Boost Post" Upsell Buttons**: Removes "Boost Post", "View Professional Dashboard", and similar monetization prompts from post cards.
-- **Strip Unread Count from Tab Title**: Removes the `(3)` notification badge from the browser tab title so the tab stays quiet.
-- **Hide Like & View Counts**: Strips `like_count`, `video_view_count`, and `play_count` from feed post data at the network layer so React never renders them. A CSS rule covers pre-rendered content and non-feed pages (profile grids, post detail).
+- **Hide "Download App" Banner**: Removes the persistent banner on mobile web asking you to install the app you already
+  chose not to install.
+- **Hide "Boost Post" Upsell Buttons**: Removes "Boost Post", "View Professional Dashboard", and similar monetization
+  prompts from post cards.
+- **Strip Unread Count from Tab Title**: Removes the `(3)` notification badge from the browser tab title so the tab
+  stays quiet.
+- **Hide Like & View Counts**: Strips `like_count`, `video_view_count`, and `play_count` from feed post data at the
+  network layer so React never renders them. A CSS rule covers pre-rendered content and non-feed pages (profile grids,
+  post detail).
 - **Hide Floating DM Button (Mobile)**: Removes the floating direct messages button on mobile web.
 
 #### Privacy & Limits
 
-- **Suppress Notification Permission Nag**: Blocks Instagram's repeated browser notification permission dialogs before they appear.
-- **Suppress "Stop!" Console Warning**: Filters out Instagram's self-XSS scare message (`%cStop!` in big red text) that fires in the browser console whenever devtools is open. Harmless theatre for anyone who deliberately installed a userscript.
-- **Block Error & Telemetry Reports**: Intercepts `fetch` and `XMLHttpRequest` calls to Instagram's `/error/ig_web_error_reports/` endpoint and stubs out `ReportingObserver` so JavaScript-initiated error reports are never sent. Note: the browser's native [Reporting API](https://developer.mozilla.org/en-US/docs/Web/API/Reporting_API) sends reports outside of JavaScript based on `Report-To` response headers — blocking those requires a network-level rule (uBlock Origin custom filter: `||www.instagram.com/error/ig_web_error_reports/*`).
-- **Block DM Read Receipts ("Seen")**: Intercepts the `useIGDMarkThreadAsReadMutation` and `useIGDMarkThreadAsReadValidationMutation` GraphQL calls that fire when you open a DM conversation with unread messages. Blocking these prevents the sender from seeing the "Seen" timestamp. Matched via the stable `X-FB-Friendly-Name` request header rather than the `doc_id` which changes on each Instagram deploy.
-- **Auto-Dismiss Cookie Consent Banner**: Automatically clicks the decline/reject button on cookie and privacy dialogs, including multilingual variants.
+- **Suppress Notification Permission Nag**: Blocks Instagram's repeated browser notification permission dialogs before
+  they appear.
+- **Suppress "Stop!" Console Warning**: Filters out Instagram's self-XSS scare message (`%cStop!` in big red text) that
+  fires in the browser console whenever devtools is open. Harmless theatre for anyone who deliberately installed a
+  userscript.
+- **Block Error & Telemetry Reports**: Intercepts `fetch` and `XMLHttpRequest` calls to Instagram's
+  `/error/ig_web_error_reports/` endpoint and stubs out `ReportingObserver` so JavaScript-initiated error reports are
+  never sent. Note: the browser's native [Reporting API](https://developer.mozilla.org/en-US/docs/Web/API/Reporting_API)
+  sends reports outside of JavaScript based on `Report-To` response headers — blocking those requires a network-level
+  rule (uBlock Origin custom filter: `||www.instagram.com/error/ig_web_error_reports/*`).
+- **Block DM Read Receipts ("Seen")**: Intercepts the `useIGDMarkThreadAsReadMutation` and
+  `useIGDMarkThreadAsReadValidationMutation` GraphQL calls that fire when you open a DM conversation with unread
+  messages. Blocking these prevents the sender from seeing the "Seen" timestamp. Matched via the stable
+  `X-FB-Friendly-Name` request header rather than the `doc_id` which changes on each Instagram deploy.
+- **Auto-Dismiss Cookie Consent Banner**: Automatically clicks the decline/reject button on cookie and privacy dialogs,
+  including multilingual variants.
 - **Mute Autoplay Videos**: Forces all video elements to muted, including ones dynamically injected as you scroll.
-- **Hide "Active Now" Presence Indicator**: Hides the green online dot and "Active X minutes ago" text in the DM list. Note: this uses best-effort CSS selectors.
-- **Session Post Limit**: Set a maximum number of posts per session (0 = unlimited). When the limit is reached, a full-screen interstitial requires a deliberate click to continue scrolling.
+- **Hide "Active Now" Presence Indicator**: Hides the green online dot and "Active X minutes ago" text in the DM list.
+  Note: this uses best-effort CSS selectors.
+- **Session Post Limit**: Set a maximum number of posts per session (0 = unlimited). When the limit is reached, a
+  full-screen interstitial requires a deliberate click to continue scrolling.
 
 ## What We're Fighting
 
@@ -112,45 +146,77 @@ Things Instagram broke on purpose and we're fixing out of spite.
 
 ### Feed & Content Control
 
-**Remove "New Posts" / "Catch Up" interrupt banners** — That sticky banner that teleports you back to the top the moment you graze it with your thumb. It resets your scroll position just in case you were about to leave. A CSS rule targeting the banner container kills it dead.
+**Remove "New Posts" / "Catch Up" interrupt banners** — That sticky banner that teleports you back to the top the moment
+you graze it with your thumb. It resets your scroll position just in case you were about to leave. A CSS rule targeting
+the banner container kills it dead.
 
-**Collapse "Collab" posts** — Partnership posts weren't enough — now two accounts can co-publish so the same ad shows up in the feed of both followerships simultaneously. Detect the `coauthor_producers` field in the post JSON and treat any populated coauthor list as suspect promotional content worth filtering.
+**Collapse "Collab" posts** — Partnership posts weren't enough — now two accounts can co-publish so the same ad shows up
+in the feed of both followerships simultaneously. Detect the `coauthor_producers` field in the post JSON and treat any
+populated coauthor list as suspect promotional content worth filtering.
 
-**Strip AI-generated content labels / hide AI slop posts** — Instagram labels AI-generated images with a tiny badge and then keeps the post front and center anyway. Detect `is_ai_generated` or equivalent flags in the post JSON and optionally blur or remove the post, because AI content farms are already taking over.
+**Strip AI-generated content labels / hide AI slop posts** — Instagram labels AI-generated images with a tiny badge and
+then keeps the post front and center anyway. Detect `is_ai_generated` or equivalent flags in the post JSON and
+optionally blur or remove the post, because AI content farms are already taking over.
 
-**Filter out "Add Yours" sticker chain posts** — Viral sticker prompts ("photo of your shoes") appear in your feed from people you've never heard of. Detect the `add_yours` sticker metadata in the post JSON and filter accordingly.
+**Filter out "Add Yours" sticker chain posts** — Viral sticker prompts ("photo of your shoes") appear in your feed from
+people you've never heard of. Detect the `add_yours` sticker metadata in the post JSON and filter accordingly.
 
-**Remove notification dots / "unseen" rings from the Stories tray** — The red ring on every story is a Skinner box lever. Your brain reads it as urgent and clears it compulsively. Removing the dot via CSS leaves stories accessible for people who want them while killing the manufactured urgency.
+**Remove notification dots / "unseen" rings from the Stories tray** — The red ring on every story is a Skinner box
+lever. Your brain reads it as urgent and clears it compulsively. Removing the dot via CSS leaves stories accessible for
+people who want them while killing the manufactured urgency.
 
 ### UI Chrome & Navigation
 
-**Hide the "Download the App" banner on mobile web** — A fat banner eating 15% of the screen every single cold load, asking you to install the app you already chose not to install. One CSS rule against the banner container and it's gone for good.
+**Hide the "Download the App" banner on mobile web** — A fat banner eating 15% of the screen every single cold load,
+asking you to install the app you already chose not to install. One CSS rule against the banner container and it's gone
+for good.
 
-**Remove the Threads cross-promo from the sidebar nav** — Instagram added a Threads shortcut to the main nav without asking. If you wanted Threads, you'd have it. Target the nav link by its `aria-label` or SVG path and remove it.
+**Remove the Threads cross-promo from the sidebar nav** — Instagram added a Threads shortcut to the main nav without
+asking. If you wanted Threads, you'd have it. Target the nav link by its `aria-label` or SVG path and remove it.
 
-**Hide Creator / "Boost Post" upsell buttons** — "Boost Post", "View Professional Dashboard", "Get more reach" — ads for Instagram's own monetization funnel, disguised as helpful tools, slapped onto every post card. CSS sweep across the button labels removes them and makes post cards look like they did a few years ago.
+**Hide Creator / "Boost Post" upsell buttons** — "Boost Post", "View Professional Dashboard", "Get more reach" — ads for
+Instagram's own monetization funnel, disguised as helpful tools, slapped onto every post card. CSS sweep across the
+button labels removes them and makes post cards look like they did a few years ago.
 
-**Strip the unread count from the browser tab title** — The tab title becomes "(3) Instagram" the moment someone double-taps your photo, pulling you back like a leash. A MutationObserver stripping the leading `(N)` from `document.title` keeps the tab quiet.
+**Strip the unread count from the browser tab title** — The tab title becomes "(3) Instagram" the moment someone
+double-taps your photo, pulling you back like a leash. A MutationObserver stripping the leading `(N)` from
+`document.title` keeps the tab quiet.
 
-**Suppress "Turn on Notifications" permission nag** — Instagram fires the browser notification permission dialog constantly — sometimes multiple times per session. Intercept and suppress `Notification.requestPermission` calls so the dialog never appears. You would have opted in already if you wanted this.
+**Suppress "Turn on Notifications" permission nag** — Instagram fires the browser notification permission dialog
+constantly — sometimes multiple times per session. Intercept and suppress `Notification.requestPermission` calls so the
+dialog never appears. You would have opted in already if you wanted this.
 
-**Option to hide the Stories bar entirely** — The bar is always full because Instagram makes sure of it with ads and filler accounts. A toggle to hide the entire bar, or at minimum filter it to only accounts on a whitelist, reclaims significant vertical space and removes a major distraction loop.
+**Option to hide the Stories bar entirely** — The bar is always full because Instagram makes sure of it with ads and
+filler accounts. A toggle to hide the entire bar, or at minimum filter it to only accounts on a whitelist, reclaims
+significant vertical space and removes a major distraction loop.
 
 ### Dark Patterns & Engagement Manipulation
 
-**Hide like counts, view counts, and share counts** — Instagram's own research showed hiding like counts reduced anxiety, so they made it opt-in and buried the setting three menus deep. Strips count fields from feed JSON at the network layer so React never renders them; CSS covers pre-rendered content and non-feed pages.
+**Hide like counts, view counts, and share counts** — Instagram's own research showed hiding like counts reduced
+anxiety, so they made it opt-in and buried the setting three menus deep. Strips count fields from feed JSON at the
+network layer so React never renders them; CSS covers pre-rendered content and non-feed pages.
 
-**Mute autoplay video sound by default** — Every autoplay Reel that blasts audio is a miniature ambush. Force `muted` on all video elements at load time and after dynamic injection, since Instagram re-injects them as you scroll.
+**Mute autoplay video sound by default** — Every autoplay Reel that blasts audio is a miniature ambush. Force `muted` on
+all video elements at load time and after dynamic injection, since Instagram re-injects them as you scroll.
 
-**Hide "Active Now" presence indicator** — Instagram tells everyone you've ever DM'd exactly when you're online. CSS hides the green dot on your own avatar and suppresses "Active X minutes ago" in the DM list so you stop being surveilled in real time.
+**Hide "Active Now" presence indicator** — Instagram tells everyone you've ever DM'd exactly when you're online. CSS
+hides the green dot on your own avatar and suppresses "Active X minutes ago" in the DM list so you stop being surveilled
+in real time.
 
-**Auto-dismiss cookie consent and GDPR popups** — The cookie banner and the privacy nag are deliberately re-triggered on every cold load to wear you into accepting tracking. A MutationObserver spots the modal and clicks the reject/dismiss button before you see it.
+**Auto-dismiss cookie consent and GDPR popups** — The cookie banner and the privacy nag are deliberately re-triggered on
+every cold load to wear you into accepting tracking. A MutationObserver spots the modal and clicks the reject/dismiss
+button before you see it.
 
-**Session post limit with hard stop** — Instagram killed the "You're All Caught Up" wall because it worked — people left. A user-configurable post counter (default: 30) triggers a full-screen interstitial requiring a deliberate click to continue. Optionally shows a session timer so the time cost feels real.
+**Session post limit with hard stop** — Instagram killed the "You're All Caught Up" wall because it worked — people
+left. A user-configurable post counter (default: 30) triggers a full-screen interstitial requiring a deliberate click to
+continue. Optionally shows a session timer so the time cost feels real.
 
-**Block DM read receipts ("Seen" indicator)** — The "Seen at X:XX" timestamp creates constant social pressure to respond immediately. Blocks `useIGDMarkThreadAsReadMutation` and `useIGDMarkThreadAsReadValidationMutation` via `X-FB-Friendly-Name` header matching in the fetch/XHR interceptor.
+**Block DM read receipts ("Seen" indicator)** — The "Seen at X:XX" timestamp creates constant social pressure to respond
+immediately. Blocks `useIGDMarkThreadAsReadMutation` and `useIGDMarkThreadAsReadValidationMutation` via
+`X-FB-Friendly-Name` header matching in the fetch/XHR interceptor.
 
-**Block "Suggested for You" profiles** — The widget lives in the right sidebar, below the account-switcher and above the footer. Walks up from the "See all" anchor until finding the sidebar section root, then hides it entirely.
+**Block "Suggested for You" profiles** — The widget lives in the right sidebar, below the account-switcher and above the
+footer. Walks up from the "See all" anchor until finding the sidebar section root, then hides it entirely.
 
 ### Hiding the Button
 
@@ -165,31 +231,40 @@ Your settings remain active — only the button is hidden. To restore it, visit 
 https://www.instagram.com/#ig-clean-show
 ```
 
-The script detects the hash, restores the button, and removes the hash from the URL automatically. Reload the page and the button will reappear.
+The script detects the hash, restores the button, and removes the hash from the URL automatically. Reload the page and
+the button will reappear.
 
 ### Multilingual Support
 
-The DOM fallback recognises sponsored and suggested labels in 17+ languages, including English, German, French, Spanish, Portuguese, Italian, Dutch, Swedish, Polish, Russian, Arabic, Japanese, Korean, Chinese (Simplified and Traditional), Indonesian, and Czech.
+The DOM fallback recognises sponsored and suggested labels in 17+ languages, including English, German, French, Spanish,
+Portuguese, Italian, Dutch, Swedish, Polish, Russian, Arabic, Japanese, Korean, Chinese (Simplified and Traditional),
+Indonesian, and Czech.
 
 ## Technical Details: JSON Post Filtering
 
-This script employs a direct data-interception method to remove unwanted content at the source, rather than just hiding it visually.
+This script employs a direct data-interception method to remove unwanted content at the source, rather than just hiding
+it visually.
 
 ### Method
 
-The script hooks into the browser's native `JSON.parse` function and the `Response.prototype.json` method. This allows it to inspect and modify data payloads exchanged between the Instagram Single Page Application (SPA) and its backend servers.
+The script hooks into the browser's native `JSON.parse` function and the `Response.prototype.json` method. This allows
+it to inspect and modify data payloads exchanged between the Instagram Single Page Application (SPA) and its backend
+servers.
 
-1.  **Interception**: When Instagram requests feed data (via GraphQL API calls), the response is intercepted before it reaches the application logic.
-2.  **Recursive Scanning**: The script traverses the JSON object to locate feed timelines. It looks for standard structures such as `xdt_api__v1__feed__timeline__connection` and `edges`.
+1.  **Interception**: When Instagram requests feed data (via GraphQL API calls), the response is intercepted before it
+    reaches the application logic.
+2.  **Recursive Scanning**: The script traverses the JSON object to locate feed timelines. It looks for standard
+    structures such as `xdt_api__v1__feed__timeline__connection` and `edges`.
 3.  **Filtering**:
     - The script iterates through the `edges` (posts).
     - It inspects each item's `node` properties to identify its type.
     - **Sponsored Posts** are identified by the presence of a `node.ad` object or specific media flags (`is_sponsored`).
-    - **Suggested Content** is identified by `node.suggested_users` (user cards) or `node.explore_story` (suggested posts from unconnected accounts).
-4.  **Modification**: Matching items are removed from the array. The cleaned data object is then passed back to the application.
+    - **Suggested Content** is identified by `node.suggested_users` (user cards) or `node.explore_story` (suggested
+      posts from unconnected accounts).
+4.  **Modification**: Matching items are removed from the array. The cleaned data object is then passed back to the
+    application.
 5.  **Result**: The application renders the feed using the sanitized data, unaware that ads or suggestions ever existed.
 
-This approach prevents the "pop-in" effect often seen with CSS-only blockers and saves time/resources by not
-rendering unwanted media.
-A CSS blur fallback is included to handle pre-rendered content on the initial page load that
-might bypass the data filter.
+This approach prevents the "pop-in" effect often seen with CSS-only blockers and saves time/resources by not rendering
+unwanted media. A CSS blur fallback is included to handle pre-rendered content on the initial page load that might
+bypass the data filter.

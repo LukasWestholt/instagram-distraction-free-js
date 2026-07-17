@@ -1,0 +1,28 @@
+{
+    "name": "instagram-focus",
+    "version": "1.0.0",
+    "description": "Instagram Distraction Free - Remove suggested and sponsored posts, reels and explore tabs.",
+    "scripts": {
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/LukasWestholt/instagram-distraction-free-js.git"
+    },
+    "keywords": [],
+    "type": "commonjs",
+    "bugs": {
+        "url": "https://github.com/LukasWestholt/instagram-distraction-free-js/issues"
+    },
+    "homepage": "https://github.com/LukasWestholt/instagram-distraction-free-js#readme",
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "eslint": "^10.7.0",
+        "eslint-config-prettier": "^10.1.8",
+        "globals": "^17.7.0",
+        "prettier": "^3.9.5"
+    }
+}

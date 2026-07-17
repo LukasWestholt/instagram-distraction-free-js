@@ -17,21 +17,24 @@
 (function () {
     'use strict';
 
-    const REPO        = 'LukasWestholt/instagram-distraction-free-js';
+    const REPO = 'LukasWestholt/instagram-distraction-free-js';
     const BASE_BRANCH = 'main';
-    const DOM_WAIT_MS = 8000;   // wait for SPA to finish rendering
-    const API_WAIT_MS = 15000;  // extra wait to catch lazy feed responses
-    const REPORT_KEY  = 'ig_clean_health_last_report';
+    const DOM_WAIT_MS = 8000; // wait for SPA to finish rendering
+    const API_WAIT_MS = 15000; // extra wait to catch lazy feed responses
+    const REPORT_KEY = 'ig_clean_health_last_report';
 
     // -------------------------------------------------------------------------
     // DOM checks — selector + page context + human description
     // -------------------------------------------------------------------------
-    const isHome    = location.pathname === '/';
-    const isMobile  = window.innerWidth < 768;
+    const isHome = location.pathname === '/';
+    const isMobile = window.innerWidth < 768;
 
-    const igConfig  = (() => {
-        try { return JSON.parse(localStorage.getItem('ig_clean_config')) || {}; }
-        catch (_) { return {}; }
+    const igConfig = (() => {
+        try {
+            return JSON.parse(localStorage.getItem('ig_clean_config')) || {};
+        } catch (_) {
+            return {};
+        }
     })();
 
     const DOM_CHECKS = [
@@ -102,10 +105,12 @@
     // sets sessionStorage after our check runs (e.g. late pagination fetch).
     const _origJson = Response.prototype.json;
     Response.prototype.json = function () {
-        return _origJson.call(this).then(data => {
-            if (data?.data?.xdt_api__v1__feed__timeline__connection ||
+        return _origJson.call(this).then((data) => {
+            if (
+                data?.data?.xdt_api__v1__feed__timeline__connection ||
                 data?.xdt_api__v1__feed__timeline__connection ||
-                data?.result?.data?.xdt_api__v1__feed__timeline__connection) {
+                data?.result?.data?.xdt_api__v1__feed__timeline__connection
+            ) {
                 sessionStorage.setItem('ig_clean_feed_seen', '1');
             }
             return data;
@@ -127,9 +132,12 @@
                     'User-Agent': 'ig-clean-healthcheck',
                 },
                 data: body ? JSON.stringify(body) : undefined,
-                onload: r => {
-                    try { resolve({ status: r.status, body: JSON.parse(r.responseText) }); }
-                    catch (_) { resolve({ status: r.status, body: r.responseText }); }
+                onload: (r) => {
+                    try {
+                        resolve({ status: r.status, body: JSON.parse(r.responseText) });
+                    } catch (_) {
+                        resolve({ status: r.status, body: r.responseText });
+                    }
                 },
                 onerror: reject,
             });
@@ -147,7 +155,10 @@
 
         if (domFailures.length) {
             lines.push('## Broken DOM Selectors', '');
-            lines.push('These selectors returned no elements. Any CSS rule or DOM scan depending on them is silently broken.', '');
+            lines.push(
+                'These selectors returned no elements. Any CSS rule or DOM scan depending on them is silently broken.',
+                ''
+            );
             for (const f of domFailures) {
                 lines.push(`- \`${f.selector}\`  `);
                 lines.push(`  ${f.desc}`);
@@ -157,7 +168,10 @@
 
         if (runtimeFailures.length) {
             lines.push('## Runtime Hook / API Failures', '');
-            lines.push('These signals were missing from the session state. The indicated features are likely broken.', '');
+            lines.push(
+                'These signals were missing from the session state. The indicated features are likely broken.',
+                ''
+            );
             for (const f of runtimeFailures) {
                 lines.push(`- ${f.desc}`);
             }
@@ -173,13 +187,13 @@
         if (!token) {
             console.warn(
                 '[IG-Health] No GitHub token set — cannot file PR.\n' +
-                'Save one with: IG_HEALTH.setToken("ghp_your_token_here")\n' +
-                'Token needs: Contents (read/write) + Pull requests (write) on the repo.'
+                    'Save one with: IG_HEALTH.setToken("ghp_your_token_here")\n' +
+                    'Token needs: Contents (read/write) + Pull requests (write) on the repo.'
             );
             return;
         }
 
-        const today  = new Date().toISOString().slice(0, 10);
+        const today = new Date().toISOString().slice(0, 10);
         const branch = `health/${today}`;
 
         // Bail if a PR for this branch already exists
@@ -192,7 +206,10 @@
         // Get base SHA
         const refRes = await ghFetch('GET', `/repos/${REPO}/git/ref/heads/${BASE_BRANCH}`);
         const sha = refRes.body?.object?.sha;
-        if (!sha) { console.error('[IG-Health] Could not read base branch SHA — check your token scope'); return; }
+        if (!sha) {
+            console.error('[IG-Health] Could not read base branch SHA — check your token scope');
+            return;
+        }
 
         // Create branch (422 = already exists, harmless)
         const branchRes = await ghFetch('POST', `/repos/${REPO}/git/refs`, { ref: `refs/heads/${branch}`, sha });
@@ -202,7 +219,7 @@
         }
 
         // Build HEALTH.md content
-        const report  = buildReport(today, domFailures, apiFailures);
+        const report = buildReport(today, domFailures, apiFailures);
         const content = btoa(unescape(encodeURIComponent(report)));
 
         // Get existing HEALTH.md SHA on branch (needed to overwrite)
@@ -225,9 +242,9 @@
         // Open PR
         const prRes = await ghFetch('POST', `/repos/${REPO}/pulls`, {
             title: `[Health Check] Broken selectors detected — ${today}`,
-            body:  report,
-            head:  branch,
-            base:  BASE_BRANCH,
+            body: report,
+            head: branch,
+            base: BASE_BRANCH,
         });
 
         if (prRes.body?.html_url) {
@@ -253,7 +270,7 @@
         }
 
         // Give the page extra time for lazy API calls and hook signals to appear
-        await new Promise(r => setTimeout(r, API_WAIT_MS - DOM_WAIT_MS));
+        await new Promise((r) => setTimeout(r, API_WAIT_MS - DOM_WAIT_MS));
 
         const runtimeFailures = [];
         for (const check of RUNTIME_CHECKS) {
@@ -289,10 +306,16 @@
     setTimeout(runChecks, DOM_WAIT_MS);
 
     window.IG_HEALTH = {
-        setToken:    t  => { GM_setValue('ig_clean_gh_token', t); console.log('[IG-Health] Token saved.'); },
-        getToken:    () => GM_getValue('ig_clean_gh_token', '(not set)'),
-        runNow:      () => runChecks(),
-        clearReport: () => { GM_setValue(REPORT_KEY, ''); console.log('[IG-Health] Daily-report lock cleared.'); },
+        setToken: (t) => {
+            GM_setValue('ig_clean_gh_token', t);
+            console.log('[IG-Health] Token saved.');
+        },
+        getToken: () => GM_getValue('ig_clean_gh_token', '(not set)'),
+        runNow: () => runChecks(),
+        clearReport: () => {
+            GM_setValue(REPORT_KEY, '');
+            console.log('[IG-Health] Daily-report lock cleared.');
+        },
     };
 
     console.log('[IG-Health] Loaded. Run IG_HEALTH.setToken("ghp_...") to enable GitHub PR filing.');
