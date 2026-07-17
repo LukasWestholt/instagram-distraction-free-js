@@ -32,6 +32,18 @@ Instagram Distraction Free - Remove suggested and sponsored posts, reels and exp
    - Go to `instagram.com` in Safari — the script activates automatically.
    - A small **IG Clean** button appears in the bottom-right corner for settings.
 
+### Optional: Health Check Script
+
+The health check script monitors whether IG Clean's selectors still resolve after Instagram updates, and can automatically file a GitHub issue when something breaks.
+
+- **[Install Health Check](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/ig_clean_healthcheck.user.js)** — install the same way as the main script above.
+
+To enable automatic GitHub issue filing, paste a personal access token (needs *Contents* and *Pull requests* write access on this repo) into the browser console once:
+
+```js
+IG_HEALTH.setToken("ghp_your_token_here")
+```
+
 ## Usage
 
 Once installed, the script runs automatically when you visit Instagram.com.
