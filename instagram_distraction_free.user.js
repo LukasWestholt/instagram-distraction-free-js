@@ -48,6 +48,7 @@
         // Privacy & limits
         suppressNotificationNag: true,
         suppressErrorReports: true,
+        suppressClientEvents: true,
         suppressSelfXSSWarning: true,
         blockDMReadReceipts: false,
         autoDismissCookieBanner: true,
@@ -96,7 +97,8 @@
     // === FETCH / XHR INTERCEPTOR ===
     // Single hook handles all request-level blocking to avoid chaining multiple wrappers.
     ;(function () {
-        const ERROR_PATH   = '/error/ig_web_error_reports/';
+        const ERROR_PATH      = '/error/ig_web_error_reports/';
+        const CLIENT_EVENTS   = 'graph.instagram.com/logging_client_events';
         // Identified from HAR: these two mutations mark DMs as read.
         // Matched via X-FB-Friendly-Name header (stable across doc_id changes).
         const READ_MUTATIONS = new Set([
@@ -116,6 +118,9 @@
             const url = resource instanceof Request ? resource.url : String(resource);
 
             if (config.suppressErrorReports && url.includes(ERROR_PATH))
+                return Promise.resolve(new Response('', { status: 200 }));
+
+            if (config.suppressClientEvents && url.includes(CLIENT_EVENTS))
                 return Promise.resolve(new Response('', { status: 200 }));
 
             if (config.blockDMReadReceipts && url.includes('/api/graphql') &&
@@ -143,6 +148,7 @@
         const _origSend = XMLHttpRequest.prototype.send;
         XMLHttpRequest.prototype.send = function (...args) {
             if (config.suppressErrorReports && this._igUrl?.includes(ERROR_PATH)) return;
+            if (config.suppressClientEvents && this._igUrl?.includes(CLIENT_EVENTS)) return;
             if (config.blockDMReadReceipts && this._igUrl?.includes('/api/graphql') &&
                 READ_MUTATIONS.has(this._igFriendlyName)) {
                 console.log('[IG-Clean] Blocked DM read receipt (XHR):', this._igFriendlyName);
@@ -151,7 +157,7 @@
             return _origSend.apply(this, args);
         };
 
-        if (config.suppressErrorReports || config.blockDMReadReceipts)
+        if (config.suppressErrorReports || config.suppressClientEvents || config.blockDMReadReceipts)
             sessionStorage.setItem('ig_clean_fetch_hooked', '1');
 
         // Stub ReportingObserver so Instagram's JS-side report collection is a no-op.
@@ -396,6 +402,7 @@
         modal.appendChild(createToggle('suppressNotificationNag', 'Suppress Notification Permission Nag'));
         modal.appendChild(createToggle('suppressSelfXSSWarning', 'Suppress "Stop!" Console Warning'));
         modal.appendChild(createToggle('suppressErrorReports', 'Block Error & Telemetry Reports'));
+        modal.appendChild(createToggle('suppressClientEvents', 'Block Client Event Reports (graph.instagram.com)'));
         modal.appendChild(createToggle('blockDMReadReceipts', 'Block DM Read Receipts ("Seen")'));
         modal.appendChild(createToggle('autoDismissCookieBanner', 'Auto-Dismiss Cookie Consent Banner'));
         modal.appendChild(createToggle('muteAutoplayVideo', 'Mute Autoplay Videos'));
