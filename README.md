@@ -25,7 +25,8 @@ Instagram Distraction Free - Remove suggested and sponsored posts, reels and exp
    - Under *Allow Extension to Read and Modify Webpages* set **instagram.com** (or *All Websites*) to **Allow**.
 
 3. **Install the userscript**
-   - Tap **[Install Script](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js)** in Safari — the extension will intercept the link and show the install dialog.
+   - **Tampermonkey**: Tap **[Install Script](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js)** in Safari — Tampermonkey will intercept the link and show the install dialog.
+   - **Userscripts**: Open the app and configure a sync folder (iCloud or local). Then long-press **[Install Script](https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js)** → *Download Linked File* and save it to that folder. Userscripts picks it up automatically.
 
 4. **Open Instagram in Safari**
    - Go to `instagram.com` in Safari — the script activates automatically.
