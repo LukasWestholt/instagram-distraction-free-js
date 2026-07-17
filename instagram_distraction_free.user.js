@@ -47,6 +47,7 @@
         hideStoriesNotificationDots: false,
         // Privacy & limits
         suppressNotificationNag: true,
+        suppressErrorReports: true,
         autoDismissCookieBanner: true,
         muteAutoplayVideo: false,
         hideActiveNow: false,
@@ -73,6 +74,45 @@
 
     if (config.suppressNotificationNag) {
         try { Notification.requestPermission = () => Promise.resolve('default'); } catch (_) {}
+    }
+
+    if (config.suppressErrorReports) {
+        const ERROR_PATH = '/error/ig_web_error_reports/';
+
+        // Block JavaScript-initiated fetch calls to the error reporting endpoint.
+        // NOTE: The browser's native Reporting API (Report-To header) sends reports
+        // outside of JavaScript — those can only be blocked at the network level,
+        // e.g. uBlock Origin rule: ||www.instagram.com/error/ig_web_error_reports/*
+        const _origFetch = window.fetch;
+        window.fetch = function (resource, init) {
+            const url = resource instanceof Request ? resource.url : String(resource);
+            if (url.includes(ERROR_PATH)) return Promise.resolve(new Response('', { status: 200 }));
+            return _origFetch.apply(this, arguments);
+        };
+
+        // Belt-and-suspenders: block XHR too
+        const _origOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function (method, url, ...rest) {
+            if (String(url).includes(ERROR_PATH)) this._igCleanBlocked = true;
+            return _origOpen.apply(this, [method, url, ...rest]);
+        };
+        const _origSend = XMLHttpRequest.prototype.send;
+        XMLHttpRequest.prototype.send = function (...args) {
+            if (this._igCleanBlocked) return;
+            return _origSend.apply(this, args);
+        };
+
+        // Stub ReportingObserver so Instagram's JS-side report collection is a no-op
+        try {
+            window.ReportingObserver = class {
+                observe() {}
+                disconnect() {}
+                takeRecords() { return []; }
+            };
+        } catch (_) {}
+
+        // Signal for health check
+        sessionStorage.setItem('ig_clean_fetch_hooked', '1');
     }
 
     // === REDIRECTS ===
@@ -278,6 +318,7 @@
 
         modal.appendChild(sectionLabel('Privacy & Limits'));
         modal.appendChild(createToggle('suppressNotificationNag', 'Suppress Notification Permission Nag'));
+        modal.appendChild(createToggle('suppressErrorReports', 'Block Error & Telemetry Reports'));
         modal.appendChild(createToggle('autoDismissCookieBanner', 'Auto-Dismiss Cookie Consent Banner'));
         modal.appendChild(createToggle('muteAutoplayVideo', 'Mute Autoplay Videos'));
         modal.appendChild(createToggle('hideActiveNow', 'Hide "Active Now" Presence Indicator'));

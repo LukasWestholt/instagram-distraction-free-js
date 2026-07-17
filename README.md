@@ -91,6 +91,7 @@ The settings panel adapts to your device: a standard modal on desktop, a bottom 
 #### Privacy & Limits
 
 - **Suppress Notification Permission Nag**: Blocks Instagram's repeated browser notification permission dialogs before they appear.
+- **Block Error & Telemetry Reports**: Intercepts `fetch` and `XMLHttpRequest` calls to Instagram's `/error/ig_web_error_reports/` endpoint and stubs out `ReportingObserver` so JavaScript-initiated error reports are never sent. Note: the browser's native [Reporting API](https://developer.mozilla.org/en-US/docs/Web/API/Reporting_API) sends reports outside of JavaScript based on `Report-To` response headers — blocking those requires a network-level rule (e.g. uBlock Origin: `||www.instagram.com/error/ig_web_error_reports/*`).
 - **Auto-Dismiss Cookie Consent Banner**: Automatically clicks the decline/reject button on cookie and privacy dialogs, including multilingual variants.
 - **Mute Autoplay Videos**: Forces all video elements to muted, including ones dynamically injected as you scroll.
 - **Hide "Active Now" Presence Indicator**: Hides the green online dot and "Active X minutes ago" text in the DM list. Note: this uses best-effort CSS selectors.

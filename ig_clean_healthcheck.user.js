@@ -66,14 +66,20 @@
     ];
 
     // -------------------------------------------------------------------------
-    // API check — the main script signals via sessionStorage when it sees the
-    // feed timeline key, so we know JSON filtering is still wired up correctly.
+    // Runtime checks via sessionStorage signals set by the main script
     // -------------------------------------------------------------------------
-    const API_CHECKS = [
+    const RUNTIME_CHECKS = [
         {
             id: 'feed_timeline_key',
+            sessionKey: 'ig_clean_feed_seen',
             desc: 'Feed timeline JSON key (`xdt_api__v1__feed__timeline__connection`) — required for all JSON-layer filters',
-            // Evaluated in runChecks() via sessionStorage
+            active: () => isHome,
+        },
+        {
+            id: 'fetch_hook',
+            sessionKey: 'ig_clean_fetch_hooked',
+            desc: 'fetch/XHR hook for error report suppression (`suppressErrorReports`) — hook was not installed',
+            active: () => true,
         },
     ];
 
@@ -115,7 +121,7 @@
         });
     }
 
-    function buildReport(today, domFailures, apiFailures) {
+    function buildReport(today, domFailures, runtimeFailures) {
         const lines = [
             '# IG Clean — Selector Health Report',
             '',
@@ -134,10 +140,10 @@
             lines.push('');
         }
 
-        if (apiFailures.length) {
-            lines.push('## Missing API Fields / Keys', '');
-            lines.push('These were absent from intercepted feed responses. JSON-layer filtering depending on them is silently broken.', '');
-            for (const f of apiFailures) {
+        if (runtimeFailures.length) {
+            lines.push('## Runtime Hook / API Failures', '');
+            lines.push('These signals were missing from the session state. The indicated features are likely broken.', '');
+            for (const f of runtimeFailures) {
                 lines.push(`- ${f.desc}`);
             }
             lines.push('');
@@ -229,17 +235,20 @@
             }
         }
 
-        // Give the page extra time to make a feed API call before checking API state
+        // Give the page extra time for lazy API calls and hook signals to appear
         await new Promise(r => setTimeout(r, API_WAIT_MS - DOM_WAIT_MS));
 
-        const apiFailures = [];
-        if (isHome && sessionStorage.getItem('ig_clean_feed_seen') !== '1') {
-            console.warn('[IG-Health] BROKEN — feed timeline key never appeared in API responses\n  JSON-layer filtering is inactive');
-            apiFailures.push(API_CHECKS[0]);
+        const runtimeFailures = [];
+        for (const check of RUNTIME_CHECKS) {
+            if (!check.active()) continue;
+            if (sessionStorage.getItem(check.sessionKey) !== '1') {
+                console.warn(`[IG-Health] BROKEN — ${check.id}\n  ${check.desc}`);
+                runtimeFailures.push(check);
+            }
         }
 
         // Log summary
-        const total = domFailures.length + apiFailures.length;
+        const total = domFailures.length + runtimeFailures.length;
         if (total === 0) {
             console.log('[IG-Health] ✓ All checks passed');
             return;
@@ -254,7 +263,7 @@
         }
         GM_setValue(REPORT_KEY, today);
 
-        await createPR(domFailures, apiFailures);
+        await createPR(domFailures, runtimeFailures);
     }
 
     // -------------------------------------------------------------------------
