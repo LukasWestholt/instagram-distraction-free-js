@@ -305,39 +305,47 @@
                 row.appendChild(switchEl);
                 row.appendChild(input);
                 row.addEventListener('click', (e) => {
-                    if (e.target !== input) { input.checked = !input.checked; input.dispatchEvent(new Event('change')); }
+                    e.preventDefault(); // prevent label's default (label activation) from double-toggling
+                    if (e.target !== input) {
+                        input.checked = !input.checked;
+                        config[key] = input.checked;
+                        saveConfig();
+                        switchEl.style.background = input.checked ? '#34c759' : '#39393d';
+                        thumb.style.left = input.checked ? '22px' : '2px';
+                    }
                 });
                 return row;
             } else {
-                const row = document.createElement('div');
+                // label+input: browser's native toggle mechanism — immune to Instagram's
+                // SPA click interceptors because label→input wiring is handled by the UA.
+                const row = document.createElement('label');
                 row.dataset.igRow = '1';
-                row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin:8px 0;padding:4px 0;cursor:pointer;user-select:none;pointer-events:auto;';
+                row.style.cssText = 'margin:8px 0;padding:4px 0;';
 
                 const text = document.createElement('span');
                 text.innerText = label;
-                text.style.cssText = 'font-size:14px;color:#000;flex:1;padding-right:12px;pointer-events:none;';
+                text.style.cssText = 'font-size:14px;color:#000;flex:1;padding-right:12px;';
 
                 const track = document.createElement('div');
-                track.style.cssText = 'width:42px;height:24px;border-radius:12px;position:relative;flex-shrink:0;transition:background 0.2s;background:' + (config[key] ? '#0095f6' : '#ccc') + ';pointer-events:none;';
+                track.style.cssText = 'width:42px;height:24px;border-radius:12px;position:relative;flex-shrink:0;transition:background 0.2s;background:' + (config[key] ? '#0095f6' : '#ccc') + ';';
 
                 const thumb = document.createElement('div');
-                thumb.style.cssText = 'width:20px;height:20px;border-radius:50%;background:white;position:absolute;top:2px;transition:left 0.2s;left:' + (config[key] ? '20px' : '2px') + ';box-shadow:0 1px 3px rgba(0,0,0,0.3);pointer-events:none;';
+                thumb.style.cssText = 'width:20px;height:20px;border-radius:50%;background:white;position:absolute;top:2px;transition:left 0.2s;left:' + (config[key] ? '20px' : '2px') + ';box-shadow:0 1px 3px rgba(0,0,0,0.3);';
                 track.appendChild(thumb);
+
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.checked = config[key];
+                input.addEventListener('change', () => {
+                    config[key] = input.checked;
+                    saveConfig();
+                    track.style.background = input.checked ? '#0095f6' : '#ccc';
+                    thumb.style.left = input.checked ? '20px' : '2px';
+                });
 
                 row.appendChild(text);
                 row.appendChild(track);
-
-                // Use mousedown so the event fires before Instagram's SPA router
-                // intercepts the click. Stop propagation to prevent the overlay
-                // from seeing it.
-                row.addEventListener('mousedown', (e) => {
-                    e.stopPropagation();
-                    config[key] = !config[key];
-                    saveConfig();
-                    track.style.background = config[key] ? '#0095f6' : '#ccc';
-                    thumb.style.left = config[key] ? '20px' : '2px';
-                });
-
+                row.appendChild(input);
                 return row;
             }
         };
@@ -519,13 +527,29 @@
     // === CSS STYLES ===
     const buildDynamicCSS = () => {
         let css = `
-            #ig-clean-overlay,
-            #ig-clean-overlay * {
+            #ig-clean-overlay {
                 pointer-events: auto !important;
-                box-sizing: border-box;
             }
             #ig-clean-overlay [data-ig-row] {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                pointer-events: auto !important;
                 cursor: pointer !important;
+                user-select: none !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            #ig-clean-overlay [data-ig-row] * {
+                pointer-events: none !important;
+            }
+            #ig-clean-overlay input[type="checkbox"] {
+                all: initial;
+                position: absolute !important;
+                opacity: 0 !important;
+                width: 0 !important;
+                height: 0 !important;
+                pointer-events: none !important;
             }
             .ig-clean-blurred {
                 filter: blur(8px) !important;
