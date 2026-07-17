@@ -308,23 +308,28 @@
                 return row;
             } else {
                 const row = document.createElement('div');
-                row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin:8px 0;padding:4px 0;cursor:pointer;user-select:none;';
+                row.dataset.igRow = '1';
+                row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin:8px 0;padding:4px 0;cursor:pointer;user-select:none;pointer-events:auto;';
 
                 const text = document.createElement('span');
                 text.innerText = label;
-                text.style.cssText = 'font-size:14px;color:#000;flex:1;padding-right:12px;';
+                text.style.cssText = 'font-size:14px;color:#000;flex:1;padding-right:12px;pointer-events:none;';
 
                 const track = document.createElement('div');
-                track.style.cssText = 'width:42px;height:24px;border-radius:12px;position:relative;flex-shrink:0;transition:background 0.2s;background:' + (config[key] ? '#0095f6' : '#ccc') + ';';
+                track.style.cssText = 'width:42px;height:24px;border-radius:12px;position:relative;flex-shrink:0;transition:background 0.2s;background:' + (config[key] ? '#0095f6' : '#ccc') + ';pointer-events:none;';
 
                 const thumb = document.createElement('div');
-                thumb.style.cssText = 'width:20px;height:20px;border-radius:50%;background:white;position:absolute;top:2px;transition:left 0.2s;left:' + (config[key] ? '20px' : '2px') + ';box-shadow:0 1px 3px rgba(0,0,0,0.3);';
+                thumb.style.cssText = 'width:20px;height:20px;border-radius:50%;background:white;position:absolute;top:2px;transition:left 0.2s;left:' + (config[key] ? '20px' : '2px') + ';box-shadow:0 1px 3px rgba(0,0,0,0.3);pointer-events:none;';
                 track.appendChild(thumb);
 
                 row.appendChild(text);
                 row.appendChild(track);
 
-                row.addEventListener('click', () => {
+                // Use mousedown so the event fires before Instagram's SPA router
+                // intercepts the click. Stop propagation to prevent the overlay
+                // from seeing it.
+                row.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
                     config[key] = !config[key];
                     saveConfig();
                     track.style.background = config[key] ? '#0095f6' : '#ccc';
@@ -512,6 +517,14 @@
     // === CSS STYLES ===
     const buildDynamicCSS = () => {
         let css = `
+            #ig-clean-overlay,
+            #ig-clean-overlay * {
+                pointer-events: auto !important;
+                box-sizing: border-box;
+            }
+            #ig-clean-overlay [data-ig-row] {
+                cursor: pointer !important;
+            }
             .ig-clean-blurred {
                 filter: blur(8px) !important;
                 opacity: 0.3 !important;
