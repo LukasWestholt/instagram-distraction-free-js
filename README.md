@@ -4,11 +4,12 @@ Instagram Distraction Free - Remove suggested and sponsored posts, reels and exp
 
 ## Installation
 
-### Desktop (Chrome / Firefox)
+### Desktop/Android (Chrome / Firefox)
 
 1. Install the Tampermonkey browser extension:
    - [Tampermonkey for Chrome](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
    - [Tampermonkey for Firefox](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
+   - [Tampermonkey for Firefox Android](https://addons.mozilla.org/en-US/android/addon/tampermonkey/)
 
 2. Install the userscript:
    - Create a new script in Tampermonkey.
