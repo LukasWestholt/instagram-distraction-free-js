@@ -85,7 +85,9 @@
         const _origLog = console.log;
         console.log = function (...args) {
             const first = typeof args[0] === 'string' ? args[0] : '';
-            if (first === '%cStop!' || first.includes('browser feature intended for developers') || first.includes('selfxss'))
+            if (first === '\n%cStop!' ||
+                first.includes('browser feature intended for developers') ||
+                first.includes('selfxss'))
                 return;
             return _origLog.apply(console, args);
         };
