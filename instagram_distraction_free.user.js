@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Instagram Distraction Free
 // @namespace    http://tampermonkey.net/
-// @version      2.0
+// @version      2.1
 // @description  Remove Sponsored and Suggested posts from Instagram. Supports desktop and iOS/mobile.
 // @author       Lukas Westholt
 // @match        *://*.instagram.com/*
@@ -883,6 +883,16 @@
                     console.log('[IG-Clean] Removing Add Yours post');
                     return false;
                 }
+            }
+
+            if (config.hideLikeCounts) {
+                const media = node.media || node;
+                media.like_count = null;
+                media.video_view_count = null;
+                media.play_count = null;
+                media.view_count = null;
+                media.fb_like_count = null;
+                media.like_and_view_counts_disabled = true;
             }
 
             return true;

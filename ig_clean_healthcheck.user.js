@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IG Clean — Health Check
 // @namespace    ig-clean-healthcheck
-// @version      1.0
+// @version      1.1
 // @description  Verifies IG Clean selectors still resolve; opens a GitHub PR when they break
 // @author       Lukas Westholt
 // @match        https://www.instagram.com/*

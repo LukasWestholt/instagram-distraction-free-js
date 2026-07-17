@@ -92,7 +92,7 @@ The settings panel adapts to your device: a standard modal on desktop, a bottom 
 - **Hide "Download App" Banner**: Removes the persistent banner on mobile web asking you to install the app you already chose not to install.
 - **Hide "Boost Post" Upsell Buttons**: Removes "Boost Post", "View Professional Dashboard", and similar monetization prompts from post cards.
 - **Strip Unread Count from Tab Title**: Removes the `(3)` notification badge from the browser tab title so the tab stays quiet.
-- **Hide Like & View Counts**: Hides engagement metrics via CSS. Note: Instagram's like count display varies; this is best-effort.
+- **Hide Like & View Counts**: Strips `like_count`, `video_view_count`, and `play_count` from feed post data at the network layer so React never renders them. A CSS rule covers pre-rendered content and non-feed pages (profile grids, post detail).
 - **Hide Floating DM Button (Mobile)**: Removes the floating direct messages button on mobile web.
 
 #### Privacy & Limits
