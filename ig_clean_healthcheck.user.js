@@ -3,6 +3,7 @@
 // @namespace    ig-clean-healthcheck
 // @version      1.0
 // @description  Verifies IG Clean selectors still resolve; opens a GitHub PR when they break
+// @author       Lukas Westholt
 // @match        https://www.instagram.com/*
 // @grant        GM_getValue
 // @grant        GM_setValue

@@ -3,7 +3,7 @@
 // @namespace    http://tampermonkey.net/
 // @version      2.0
 // @description  Remove Sponsored and Suggested posts from Instagram. Supports desktop and iOS/mobile.
-// @author       Antigravity
+// @author       Lukas Westholt
 // @match        *://*.instagram.com/*
 // @run-at       document-start
 // @grant        none
