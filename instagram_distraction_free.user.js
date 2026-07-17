@@ -43,6 +43,7 @@
         hideDownloadAppBanner: true,
         hideBoostButtons: false,
         hideTabTitleBadge: true,
+        hideNavBadges: true,
         hideLikeCounts: false,
         hideDMFloatingButton: false,
         hideStoriesBar: false,
@@ -397,6 +398,7 @@
         modal.appendChild(createToggle('hideDownloadAppBanner', 'Hide "Download App" Banner'));
         modal.appendChild(createToggle('hideBoostButtons', 'Hide "Boost Post" Upsell Buttons'));
         modal.appendChild(createToggle('hideTabTitleBadge', 'Strip Unread Count from Tab Title'));
+        modal.appendChild(createToggle('hideNavBadges', 'Hide Notification Count Badges on Nav Icons'));
         modal.appendChild(createToggle('hideLikeCounts', 'Hide Like & View Counts'));
         modal.appendChild(createToggle('hideDMFloatingButton', 'Hide Floating DM Button (Mobile)'));
 
@@ -600,6 +602,15 @@
             css += `
                 [aria-label="Active now"], [title="Active now"],
                 [aria-label*="Active"] span[style*="background"] { display: none !important; }
+            `;
+        }
+
+        if (config.hideNavBadges) {
+            // Notification count badges on sidebar/nav icons (Relationships, Messages, etc.)
+            // Rendered as fixed-position tooltips; :has() targets the whole badge by its stable aria-label.
+            css += `
+                [role="tooltip"]:has(span[aria-label="Relationships"]),
+                [role="tooltip"]:has(span[aria-label="Messages"]) { display: none !important; }
             `;
         }
 
