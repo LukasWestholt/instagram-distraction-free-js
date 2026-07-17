@@ -499,8 +499,8 @@
         // Threads may appear as an internal or external link depending on Instagram version
         if (config.hideThreadsNav) selectors.push(
             'a[href="/threads/"]',
-            'a[href="https://www.threads.net/"]',
-            'a[href="https://www.threads.com/"]',
+            'a[href*="threads.net"]',
+            'a[href*="threads.com"]',
         );
         if (selectors.length === 0) return;
 
@@ -577,6 +577,15 @@
             // Floating DM button on mobile — confirmed stable pagelet attribute from live DOM
             css += `
                 [data-pagelet="IGDChatTabsRootContentOffMsys"] { display: none !important; }
+            `;
+        }
+
+        if (config.hideThreadsNav) {
+            // Threads appears in a "More apps from Meta" popup (role="dialog"), not the main nav.
+            // The href includes a tracking param (?xmt=...) so we must use href*= contains-match.
+            // CSS is the only reliable approach since the popup is not in the DOM until clicked.
+            css += `
+                a[href*="threads.com"], a[href*="threads.net"], a[href="/threads/"] { display: none !important; }
             `;
         }
 

@@ -57,12 +57,9 @@
             desc: 'Reels nav link — used by disableReels sidebar hiding',
             active: !location.pathname.startsWith('/reels'),
         },
-        {
-            id: 'nav_threads',
-            selector: 'a[href="/threads/"], a[href="https://www.threads.net/"], a[href="https://www.threads.com/"]',
-            desc: 'Threads nav link — used by hideThreadsNav',
-            active: true,
-        },
+        // Threads link is inside a "More apps from Meta" popup (role="dialog") that only
+        // renders on click — never present at check time, so DOM-checking it always fails.
+        // Hiding is CSS-based (a[href*="threads.com"]) and does not need a DOM check.
     ];
 
     // -------------------------------------------------------------------------
