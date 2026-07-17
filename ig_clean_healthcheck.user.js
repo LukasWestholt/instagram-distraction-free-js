@@ -59,7 +59,7 @@
         },
         {
             id: 'nav_threads',
-            selector: 'a[href="/threads/"], a[href="https://www.threads.net/"]',
+            selector: 'a[href="/threads/"], a[href="https://www.threads.net/"], a[href="https://www.threads.com/"]',
             desc: 'Threads nav link — used by hideThreadsNav',
             active: true,
         },

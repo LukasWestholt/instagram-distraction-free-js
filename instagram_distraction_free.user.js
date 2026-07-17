@@ -492,7 +492,11 @@
         if (config.disableExplore) selectors.push('a[href="/explore/"]');
         if (config.disableReels)   selectors.push('a[href="/reels/"]');
         // Threads may appear as an internal or external link depending on Instagram version
-        if (config.hideThreadsNav) selectors.push('a[href="/threads/"]', 'a[href="https://www.threads.net/"]');
+        if (config.hideThreadsNav) selectors.push(
+            'a[href="/threads/"]',
+            'a[href="https://www.threads.net/"]',
+            'a[href="https://www.threads.com/"]',
+        );
         if (selectors.length === 0) return;
 
         for (const link of document.querySelectorAll(selectors.join(', '))) {
