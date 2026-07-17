@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Instagram Distraction Free
 // @namespace    http://tampermonkey.net/
-// @version      1.4
+// @version      2.0
 // @description  Remove Sponsored and Suggested posts from Instagram. Supports desktop and iOS/mobile.
 // @author       Antigravity
 // @match        *://*.instagram.com/*
@@ -12,7 +12,7 @@
 (function () {
     'use strict';
 
-    console.log('[IG-Clean] v1.4 Script initialized. Hooking JSON.parse and Response.json...');
+    console.log('[IG-Clean] v2.0 initialized.');
 
     const originalParse = JSON.parse;
     const originalResponseJson = Response.prototype.json;
@@ -21,20 +21,45 @@
 
     // === CONFIGURATION ===
     const DEFAULT_CONFIG = {
+        // Sponsored
         removeSponsored: true,
         blurSponsored: true,
+        // Suggested
         removeSuggested: true,
         blurSuggested: true,
+        // Navigation
         redirectToFollowing: true,
         disableExplore: true,
-        disableReels: true
+        disableReels: true,
+        hideThreadsNav: true,
+        // Feed content
+        hideNewPostsBanner: true,
+        filterCollabPosts: false,
+        filterAiContent: false,
+        filterAddYours: false,
+        // Interface
+        hideDownloadAppBanner: true,
+        hideBoostButtons: false,
+        hideTabTitleBadge: true,
+        hideLikeCounts: false,
+        hideDMFloatingButton: false,
+        hideStoriesBar: false,
+        hideStoriesNotificationDots: false,
+        // Privacy & limits
+        suppressNotificationNag: true,
+        autoDismissCookieBanner: true,
+        muteAutoplayVideo: false,
+        hideActiveNow: false,
+        sessionPostLimit: 0,
     };
 
+    // Merge stored config with defaults so new keys get their defaults for existing users
     let config = (() => {
         try {
-            return JSON.parse(localStorage.getItem('ig_clean_config')) || DEFAULT_CONFIG;
+            const stored = JSON.parse(localStorage.getItem('ig_clean_config'));
+            return stored ? { ...DEFAULT_CONFIG, ...stored } : { ...DEFAULT_CONFIG };
         } catch (_) {
-            return DEFAULT_CONFIG;
+            return { ...DEFAULT_CONFIG };
         }
     })();
 
@@ -44,32 +69,29 @@
 
     let cleanedCount = { ads: 0, suggested: 0 };
 
+    // === EARLY INTERCEPTS (before DOM) ===
+
+    if (config.suppressNotificationNag) {
+        try { Notification.requestPermission = () => Promise.resolve('default'); } catch (_) {}
+    }
+
     // === REDIRECTS ===
     const path = window.location.pathname;
 
-    if (config.redirectToFollowing) {
-        if (path === '/' && !window.location.search) {
-            console.log('[IG-Clean] Redirecting to Following feed...');
-            window.location.replace('/?variant=following');
-        }
+    if (config.redirectToFollowing && path === '/' && !window.location.search) {
+        window.location.replace('/?variant=following');
     }
-    if (config.disableExplore) {
-        if (path.startsWith('/explore/')) {
-            console.log('[IG-Clean] Explore page disabled. Redirecting to home...');
-            window.location.replace('/');
-        }
+    if (config.disableExplore && path.startsWith('/explore/')) {
+        window.location.replace('/');
     }
-    if (config.disableReels) {
-        if (path.startsWith('/reels/')) {
-            console.log('[IG-Clean] Reels page disabled. Redirecting to home...');
-            window.location.replace('/');
-        }
+    if (config.disableReels && path.startsWith('/reels/')) {
+        window.location.replace('/');
     }
 
     // === SETTINGS UI ===
     function createSettingsUI() {
         if (localStorage.getItem('ig_clean_hidden') === 'true') {
-            console.log('[IG-Clean] Settings button permanently hidden. Run igCleanShow() in console to restore.');
+            console.log('[IG-Clean] Button hidden. Visit instagram.com/#ig-clean-show to restore.');
             return;
         }
 
@@ -79,21 +101,11 @@
 
         if (isMobile) {
             btn.style.cssText = [
-                'position: fixed',
-                'bottom: 24px',
-                'right: 16px',
-                'z-index: 9999',
-                'background: #333',
-                'color: white',
-                'border: none',
-                'padding: 12px 16px',
-                'border-radius: 20px',
-                'cursor: pointer',
-                'opacity: 0.6',
-                'font-size: 13px',
-                'font-family: -apple-system, sans-serif',
-                '-webkit-tap-highlight-color: transparent',
-                'touch-action: manipulation',
+                'position: fixed', 'bottom: 24px', 'right: 16px', 'z-index: 9999',
+                'background: #333', 'color: white', 'border: none',
+                'padding: 12px 16px', 'border-radius: 20px', 'cursor: pointer',
+                'opacity: 0.6', 'font-size: 13px', 'font-family: -apple-system, sans-serif',
+                '-webkit-tap-highlight-color: transparent', 'touch-action: manipulation',
             ].join(';');
             btn.addEventListener('touchstart', () => { btn.style.opacity = '1'; }, { passive: true });
             btn.addEventListener('touchend',   () => { btn.style.opacity = '0.6'; }, { passive: true });
@@ -113,16 +125,9 @@
 
         if (isMobile) {
             overlay.style.cssText = [
-                'position: fixed',
-                'top: 0',
-                'left: 0',
-                'width: 100%',
-                'height: 100%',
-                'background: rgba(0,0,0,0.75)',
-                'z-index: 10000',
-                'display: flex',
-                'justify-content: center',
-                'align-items: flex-end',
+                'position: fixed', 'top: 0', 'left: 0', 'width: 100%', 'height: 100%',
+                'background: rgba(0,0,0,0.75)', 'z-index: 10000',
+                'display: flex', 'justify-content: center', 'align-items: flex-end',
             ].join(';');
         } else {
             overlay.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; justify-content: center; align-items: center;';
@@ -136,32 +141,24 @@
 
         if (isMobile) {
             modal.style.cssText = [
-                'background: #1c1c1e',
-                'color: white',
-                'padding: 20px 20px 40px',
-                'border-radius: 16px 16px 0 0',
-                'width: 100%',
-                'max-width: 480px',
-                'font-family: -apple-system, sans-serif',
-                'box-sizing: border-box',
-                'max-height: 85vh',
-                'overflow-y: auto',
-                '-webkit-overflow-scrolling: touch',
+                'background: #1c1c1e', 'color: white', 'padding: 20px 20px 40px',
+                'border-radius: 16px 16px 0 0', 'width: 100%', 'max-width: 480px',
+                'font-family: -apple-system, sans-serif', 'box-sizing: border-box',
+                'max-height: 85vh', 'overflow-y: auto', '-webkit-overflow-scrolling: touch',
             ].join(';');
-
             const handle = document.createElement('div');
             handle.style.cssText = 'width:36px;height:4px;background:#555;border-radius:2px;margin:0 auto 16px;';
             modal.appendChild(handle);
         } else {
-            modal.style.cssText = 'background: white; padding: 20px; border-radius: 8px; width: 340px; color: #000000 !important; font-family: sans-serif; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: relative;';
+            modal.style.cssText = 'background: white; padding: 20px; border-radius: 8px; width: 340px; color: #000 !important; font-family: sans-serif; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: relative;';
         }
 
-        // Header row with title + ✕ close
+        // Header
         const header = document.createElement('div');
         header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;';
 
         const title = document.createElement('h3');
-        title.innerText = 'IG Distraction Free Settings';
+        title.innerText = 'IG Distraction Free';
 
         const closeX = document.createElement('button');
         closeX.innerText = '✕';
@@ -169,19 +166,10 @@
 
         if (isMobile) {
             title.style.cssText = 'margin:0;font-size:17px;font-weight:600;color:white;';
-            closeX.style.cssText = [
-                'background: none',
-                'border: none',
-                'color: #888',
-                'font-size: 18px',
-                'cursor: pointer',
-                'padding: 4px 8px',
-                '-webkit-tap-highlight-color: transparent',
-                'touch-action: manipulation',
-            ].join(';');
+            closeX.style.cssText = 'background:none;border:none;color:#888;font-size:18px;cursor:pointer;padding:4px 8px;-webkit-tap-highlight-color:transparent;touch-action:manipulation;';
         } else {
-            title.style.cssText = 'margin: 0; color: black; font-size: 15px;';
-            closeX.style.cssText = 'background: none; border: none; font-size: 16px; cursor: pointer; color: #555; line-height: 1; padding: 2px 6px; border-radius: 4px;';
+            title.style.cssText = 'margin:0;color:black;font-size:15px;';
+            closeX.style.cssText = 'background:none;border:none;font-size:16px;cursor:pointer;color:#555;line-height:1;padding:2px 6px;border-radius:4px;';
             closeX.onmouseover = () => closeX.style.background = '#eee';
             closeX.onmouseout  = () => closeX.style.background = 'none';
         }
@@ -194,48 +182,21 @@
         header.appendChild(closeX);
         modal.appendChild(header);
 
-        // Toggle factory — iOS switches on mobile, checkboxes on desktop
+        // Toggle factory
         const createToggle = (key, label) => {
             if (isMobile) {
                 const row = document.createElement('label');
-                row.style.cssText = [
-                    'display: flex',
-                    'align-items: center',
-                    'justify-content: space-between',
-                    'padding: 14px 0',
-                    'border-bottom: 1px solid #333',
-                    'cursor: pointer',
-                    '-webkit-tap-highlight-color: transparent',
-                    'touch-action: manipulation',
-                ].join(';');
+                row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #333;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;';
 
                 const text = document.createElement('span');
                 text.innerText = label;
                 text.style.cssText = 'font-size:15px;color:white;flex:1;padding-right:12px;';
 
                 const switchEl = document.createElement('div');
-                switchEl.style.cssText = [
-                    'width: 51px',
-                    'height: 31px',
-                    'border-radius: 16px',
-                    'position: relative',
-                    'flex-shrink: 0',
-                    'transition: background 0.2s',
-                    'background: ' + (config[key] ? '#34c759' : '#39393d'),
-                ].join(';');
+                switchEl.style.cssText = 'width:51px;height:31px;border-radius:16px;position:relative;flex-shrink:0;transition:background 0.2s;background:' + (config[key] ? '#34c759' : '#39393d') + ';';
 
                 const thumb = document.createElement('div');
-                thumb.style.cssText = [
-                    'width: 27px',
-                    'height: 27px',
-                    'border-radius: 50%',
-                    'background: white',
-                    'position: absolute',
-                    'top: 2px',
-                    'transition: left 0.2s',
-                    'left: ' + (config[key] ? '22px' : '2px'),
-                    'box-shadow: 0 1px 3px rgba(0,0,0,0.4)',
-                ].join(';');
+                thumb.style.cssText = 'width:27px;height:27px;border-radius:50%;background:white;position:absolute;top:2px;transition:left 0.2s;left:' + (config[key] ? '22px' : '2px') + ';box-shadow:0 1px 3px rgba(0,0,0,0.4);';
                 switchEl.appendChild(thumb);
 
                 const input = document.createElement('input');
@@ -252,32 +213,20 @@
                 row.appendChild(text);
                 row.appendChild(switchEl);
                 row.appendChild(input);
-
                 row.addEventListener('click', (e) => {
-                    if (e.target !== input) {
-                        input.checked = !input.checked;
-                        input.dispatchEvent(new Event('change'));
-                    }
+                    if (e.target !== input) { input.checked = !input.checked; input.dispatchEvent(new Event('change')); }
                 });
-
                 return row;
             } else {
                 const wrapper = document.createElement('div');
-                wrapper.style.margin = '10px 0';
-                wrapper.style.color = 'black';
-
+                wrapper.style.cssText = 'margin:10px 0;color:black;';
                 const labelEl = document.createElement('label');
-                labelEl.style.cssText = 'display: flex; align-items: center; cursor: pointer; color: #000000 !important; font-size: 14px;';
-
+                labelEl.style.cssText = 'display:flex;align-items:center;cursor:pointer;color:#000 !important;font-size:14px;';
                 const input = document.createElement('input');
                 input.type = 'checkbox';
                 input.checked = config[key];
                 input.style.marginRight = '8px';
-                input.onchange = (e) => {
-                    config[key] = e.target.checked;
-                    saveConfig();
-                };
-
+                input.onchange = (e) => { config[key] = e.target.checked; saveConfig(); };
                 labelEl.appendChild(input);
                 labelEl.appendChild(document.createTextNode(label));
                 wrapper.appendChild(labelEl);
@@ -285,105 +234,129 @@
             }
         };
 
-        const section = (label) => {
+        const sectionLabel = (label) => {
             const el = document.createElement('div');
+            el.innerText = label;
             if (isMobile) {
-                el.innerText = label;
                 el.style.cssText = 'font-size:12px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin:20px 0 4px;';
             } else {
-                const hr = document.createElement('hr');
-                hr.style.margin = '10px 0';
-                modal.appendChild(hr);
-                return hr;
+                el.style.cssText = 'font-size:11px;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin:14px 0 4px;border-top:1px solid #eee;padding-top:10px;';
             }
             return el;
         };
 
+        modal.appendChild(sectionLabel('Sponsored'));
         modal.appendChild(createToggle('removeSponsored', 'Remove Sponsored (Data Filter)'));
         modal.appendChild(createToggle('blurSponsored', 'Blur Sponsored (Fallback)'));
 
-        if (isMobile) modal.appendChild(section('Suggestions'));
-        else modal.appendChild(section());
-
+        modal.appendChild(sectionLabel('Suggested'));
         modal.appendChild(createToggle('removeSuggested', 'Remove Suggested (Data Filter)'));
         modal.appendChild(createToggle('blurSuggested', 'Blur Suggested (Fallback)'));
 
-        if (isMobile) modal.appendChild(section('Navigation'));
-        else modal.appendChild(section());
-
+        modal.appendChild(sectionLabel('Navigation'));
         modal.appendChild(createToggle('redirectToFollowing', 'Default to "Following" Feed'));
         modal.appendChild(createToggle('disableExplore', 'Disable Explore Page & Sidebar'));
         modal.appendChild(createToggle('disableReels', 'Disable Reels Page & Sidebar'));
+        modal.appendChild(createToggle('hideThreadsNav', 'Hide Threads Link in Sidebar'));
 
-        // Close & Reload button
+        modal.appendChild(sectionLabel('Feed Content'));
+        modal.appendChild(createToggle('hideNewPostsBanner', 'Hide "New Posts" Banner'));
+        modal.appendChild(createToggle('filterCollabPosts', 'Filter Collab / Partnership Posts'));
+        modal.appendChild(createToggle('filterAiContent', 'Filter AI-Generated Posts'));
+        modal.appendChild(createToggle('filterAddYours', 'Filter "Add Yours" Chain Posts'));
+
+        modal.appendChild(sectionLabel('Stories'));
+        modal.appendChild(createToggle('hideStoriesBar', 'Hide Stories Bar Entirely'));
+        modal.appendChild(createToggle('hideStoriesNotificationDots', 'Hide Story Ring Notification Dots'));
+
+        modal.appendChild(sectionLabel('Interface'));
+        modal.appendChild(createToggle('hideDownloadAppBanner', 'Hide "Download App" Banner'));
+        modal.appendChild(createToggle('hideBoostButtons', 'Hide "Boost Post" Upsell Buttons'));
+        modal.appendChild(createToggle('hideTabTitleBadge', 'Strip Unread Count from Tab Title'));
+        modal.appendChild(createToggle('hideLikeCounts', 'Hide Like & View Counts'));
+        modal.appendChild(createToggle('hideDMFloatingButton', 'Hide Floating DM Button (Mobile)'));
+
+        modal.appendChild(sectionLabel('Privacy & Limits'));
+        modal.appendChild(createToggle('suppressNotificationNag', 'Suppress Notification Permission Nag'));
+        modal.appendChild(createToggle('autoDismissCookieBanner', 'Auto-Dismiss Cookie Consent Banner'));
+        modal.appendChild(createToggle('muteAutoplayVideo', 'Mute Autoplay Videos'));
+        modal.appendChild(createToggle('hideActiveNow', 'Hide "Active Now" Presence Indicator'));
+
+        // Session post limit — number input, not a toggle
+        const limitRow = (() => {
+            if (isMobile) {
+                const row = document.createElement('div');
+                row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid #333;';
+                const text = document.createElement('span');
+                text.innerText = 'Session Post Limit (0 = off)';
+                text.style.cssText = 'font-size:15px;color:white;flex:1;padding-right:12px;';
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.max = '500';
+                input.value = config.sessionPostLimit;
+                input.style.cssText = 'width:60px;padding:6px;border-radius:8px;border:1px solid #555;background:#2c2c2e;color:white;font-size:15px;text-align:center;';
+                input.onchange = () => { config.sessionPostLimit = parseInt(input.value) || 0; saveConfig(); };
+                row.appendChild(text);
+                row.appendChild(input);
+                return row;
+            } else {
+                const wrapper = document.createElement('div');
+                wrapper.style.cssText = 'margin:10px 0;color:black;display:flex;align-items:center;gap:8px;font-size:14px;';
+                wrapper.appendChild(document.createTextNode('Session Post Limit (0 = off)'));
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.min = '0';
+                input.max = '500';
+                input.value = config.sessionPostLimit;
+                input.style.cssText = 'width:55px;padding:4px 6px;border:1px solid #ccc;border-radius:4px;font-size:14px;text-align:center;';
+                input.onchange = () => { config.sessionPostLimit = parseInt(input.value) || 0; saveConfig(); };
+                wrapper.appendChild(input);
+                return wrapper;
+            }
+        })();
+        modal.appendChild(limitRow);
+
+        // Close & Reload
         const closeBtn = document.createElement('button');
         closeBtn.innerText = isMobile ? 'Done' : 'Close & Reload';
-
         if (isMobile) {
-            closeBtn.style.cssText = [
-                'margin-top: 24px',
-                'padding: 14px',
-                'background: #0a84ff',
-                'color: white',
-                'border: none',
-                'border-radius: 12px',
-                'font-size: 16px',
-                'font-weight: 600',
-                'width: 100%',
-                'cursor: pointer',
-                '-webkit-tap-highlight-color: transparent',
-                'touch-action: manipulation',
-            ].join(';');
+            closeBtn.style.cssText = 'margin-top:24px;padding:14px;background:#0a84ff;color:white;border:none;border-radius:12px;font-size:16px;font-weight:600;width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;';
         } else {
-            closeBtn.style.cssText = 'margin-top: 15px; padding: 8px 16px; background: #0095f6; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;';
+            closeBtn.style.cssText = 'margin-top:15px;padding:8px 16px;background:#0095f6;color:white;border:none;border-radius:4px;cursor:pointer;width:100%;';
         }
-
         closeBtn.addEventListener('click', () => {
             if (document.body.contains(overlay)) document.body.removeChild(overlay);
             window.location.reload();
         });
         modal.appendChild(closeBtn);
 
-        // Separator before hide-forever section
-        const sep3 = document.createElement('hr');
-        sep3.style.cssText = isMobile ? 'border-color:#333;margin:20px 0 12px;' : 'margin: 12px 0 8px;';
-        modal.appendChild(sep3);
+        // Hide Forever
+        const sep = document.createElement('hr');
+        sep.style.cssText = isMobile ? 'border-color:#333;margin:20px 0 12px;' : 'margin:12px 0 8px;';
+        modal.appendChild(sep);
 
         const dangerNote = document.createElement('p');
-        dangerNote.innerText = 'Hide this button permanently (settings still apply). To restore, open the browser console and run: igCleanShow()';
+        dangerNote.innerText = 'Hide this button permanently (settings still apply). To restore, visit instagram.com/#ig-clean-show';
         dangerNote.style.cssText = isMobile
             ? 'font-size:12px;color:#888;margin:0 0 10px;line-height:1.5;'
-            : 'font-size: 11px; color: #888; margin: 0 0 8px; line-height: 1.4;';
+            : 'font-size:11px;color:#888;margin:0 0 8px;line-height:1.4;';
         modal.appendChild(dangerNote);
 
         const hideBtn = document.createElement('button');
         hideBtn.innerText = 'Hide This Button Forever';
-
         if (isMobile) {
-            hideBtn.style.cssText = [
-                'padding: 12px',
-                'background: transparent',
-                'color: #ff453a',
-                'border: 1.5px solid #ff453a',
-                'border-radius: 12px',
-                'font-size: 14px',
-                'width: 100%',
-                'cursor: pointer',
-                '-webkit-tap-highlight-color: transparent',
-                'touch-action: manipulation',
-            ].join(';');
+            hideBtn.style.cssText = 'padding:12px;background:transparent;color:#ff453a;border:1.5px solid #ff453a;border-radius:12px;font-size:14px;width:100%;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation;';
         } else {
-            hideBtn.style.cssText = 'padding: 7px 16px; background: #fff; color: #e0245e; border: 1.5px solid #e0245e; border-radius: 4px; cursor: pointer; width: 100%; font-size: 13px;';
+            hideBtn.style.cssText = 'padding:7px 16px;background:#fff;color:#e0245e;border:1.5px solid #e0245e;border-radius:4px;cursor:pointer;width:100%;font-size:13px;';
             hideBtn.onmouseover = () => { hideBtn.style.background = '#fff0f4'; };
             hideBtn.onmouseout  = () => { hideBtn.style.background = '#fff'; };
         }
-
         hideBtn.addEventListener('click', () => {
             localStorage.setItem('ig_clean_hidden', 'true');
             const floatingBtn = document.getElementById('ig-clean-btn');
             if (floatingBtn) floatingBtn.remove();
             if (document.body.contains(overlay)) document.body.removeChild(overlay);
-            console.log('[IG-Clean] Settings button hidden. Run igCleanShow() in the console to restore it.');
         });
         modal.appendChild(hideBtn);
 
@@ -409,92 +382,328 @@
         createSettingsUI();
     }
 
-    // === SIDEBAR HIDING ===
+    // === SIDEBAR / NAV HIDING ===
     function hideSidebarItems() {
-        if (!config.disableExplore && !config.disableReels) return;
-
         const selectors = [];
         if (config.disableExplore) selectors.push('a[href="/explore/"]');
-        if (config.disableReels) selectors.push('a[href="/reels/"]');
+        if (config.disableReels)   selectors.push('a[href="/reels/"]');
+        // Threads may appear as an internal or external link depending on Instagram version
+        if (config.hideThreadsNav) selectors.push('a[href="/threads/"]', 'a[href="https://www.threads.net/"]');
         if (selectors.length === 0) return;
 
-        const links = document.querySelectorAll(selectors.join(', '));
-        for (const link of links) {
+        for (const link of document.querySelectorAll(selectors.join(', '))) {
             let container = link.closest('span[class*="html-span"]') || link.parentElement?.parentElement?.parentElement?.parentElement;
             if (!container) container = link.closest('div.x1n2onr6');
-
             if (container && !container.dataset.igCleanHidden) {
                 container.style.display = 'none';
                 container.dataset.igCleanHidden = 'true';
-                console.log(`[IG-Clean] Hidden sidebar item: ${link.getAttribute('href')}`);
             }
         }
     }
 
-    const runInitialSidebarScan = () => {
-        setTimeout(hideSidebarItems, 500);
-        setTimeout(hideSidebarItems, 2000);
+    // === CSS STYLES ===
+    const buildDynamicCSS = () => {
+        let css = `
+            .ig-clean-blurred {
+                filter: blur(8px) !important;
+                opacity: 0.3 !important;
+                pointer-events: none !important;
+                transition: filter 0.3s, opacity 0.3s;
+            }
+            .ig-clean-blurred::before {
+                content: "Filtered";
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.7);
+                color: white;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-size: 14px;
+                z-index: 1000;
+                pointer-events: none;
+            }
+        `;
+
+        if (config.hideLikeCounts) {
+            // NOTE: These selectors are best-effort — Instagram's like count DOM varies.
+            // If counts are still visible, open devtools, inspect the count element,
+            // and share the aria-label or class with us to tune this.
+            css += `
+                [aria-label$=" likes"], [aria-label$=" like"],
+                [aria-label*=" likes,"], [aria-label*=" views"] { display: none !important; }
+            `;
+        }
+
+        if (config.hideStoriesNotificationDots) {
+            // Story rings are <canvas> elements inside [data-pagelet="story_tray"] (confirmed from live DOM)
+            css += `
+                [data-pagelet="story_tray"] canvas { display: none !important; }
+            `;
+        }
+
+        if (config.hideActiveNow) {
+            // NOTE: Instagram's "Active now" indicator uses dynamic class names.
+            // These selectors are best-effort and likely need tuning after testing.
+            css += `
+                [aria-label="Active now"], [title="Active now"],
+                [aria-label*="Active"] span[style*="background"] { display: none !important; }
+            `;
+        }
+
+        if (config.hideDMFloatingButton) {
+            // Floating DM button on mobile — confirmed stable pagelet attribute from live DOM
+            css += `
+                [data-pagelet="IGDChatTabsRootContentOffMsys"] { display: none !important; }
+            `;
+        }
+
+        return css;
     };
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', runInitialSidebarScan);
-    } else {
-        runInitialSidebarScan();
+    const styleEl = document.createElement('style');
+    styleEl.textContent = buildDynamicCSS();
+    (document.head || document.documentElement).appendChild(styleEl);
+
+    // === DOM FEATURE FUNCTIONS ===
+
+    // Tab title badge — strip "(3) Instagram" → "Instagram"
+    if (config.hideTabTitleBadge) {
+        const stripBadge = () => {
+            if (/^\(\d+\)/.test(document.title)) {
+                document.title = document.title.replace(/^\(\d+\)\s*/, '');
+            }
+        };
+        const observeTitle = () => {
+            const titleEl = document.querySelector('title');
+            if (titleEl) {
+                new MutationObserver(stripBadge).observe(titleEl, { childList: true, characterData: true, subtree: true });
+                stripBadge();
+            }
+        };
+        document.readyState === 'loading'
+            ? document.addEventListener('DOMContentLoaded', observeTitle)
+            : observeTitle();
     }
 
-    const sidebarObserver = new MutationObserver(() => {
-        if (!sidebarObserver.scanScheduled) {
-            sidebarObserver.scanScheduled = true;
-            setTimeout(() => { hideSidebarItems(); sidebarObserver.scanScheduled = false; }, 500);
-        }
-    });
-
-    const startSidebarObserver = () => {
-        const sidebar = document.querySelector('nav[role="navigation"]') || document.querySelector('div[role="navigation"]')?.closest('div');
-        if (sidebar) {
-            sidebarObserver.observe(sidebar, { childList: true, subtree: true });
-            console.log('[IG-Clean] Sidebar observer started');
-        }
-    };
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', startSidebarObserver);
-    } else {
-        setTimeout(startSidebarObserver, 100);
+    // Mute all video elements
+    function muteVideos(root) {
+        if (!config.muteAutoplayVideo) return;
+        (root || document).querySelectorAll('video').forEach(v => { v.muted = true; });
     }
 
-    // === DATA FILTERING LOGIC ===
+    // Auto-dismiss cookie / GDPR banner by clicking the decline button
+    const COOKIE_DISMISS_TEXTS = new Set([
+        // English
+        'Decline optional cookies', 'Only allow essential cookies', 'Reject all',
+        // German
+        'Ablehnen', 'Nur notwendige Cookies zulassen', 'Alle ablehnen',
+        // French
+        'Refuser', 'Tout refuser',
+        // Spanish
+        'Rechazar', 'Rechazar todo',
+        // Italian
+        'Rifiuta', 'Rifiuta tutto',
+        // Dutch
+        'Weigeren', 'Alles weigeren',
+        // Portuguese
+        'Recusar', 'Recusar tudo',
+        // Russian
+        'Отклонить',
+    ]);
+
+    function autoDismissCookieBanner(root) {
+        if (!config.autoDismissCookieBanner) return;
+        for (const btn of (root || document).querySelectorAll('button')) {
+            if (COOKIE_DISMISS_TEXTS.has(btn.textContent?.trim())) {
+                btn.click();
+                console.log('[IG-Clean] Auto-dismissed cookie banner');
+                return;
+            }
+        }
+    }
+
+    // Hide "New Posts" / "See new posts" sticky banner
+    // NOTE: Instagram renders this as a button or role="button" div. The text
+    // varies ("New posts", "See new posts", "1 new post", etc.). If banners
+    // still appear, open devtools, click the banner element, and share its
+    // text content so we can add it here.
+    function hideNewPostsBanner(root) {
+        if (!config.hideNewPostsBanner) return;
+        for (const el of (root || document).querySelectorAll('[role="button"], button')) {
+            const text = el.textContent?.trim() || '';
+            if (/^(\d+ )?new posts?$/i.test(text) || /^see new posts?$/i.test(text)) {
+                const container = el.closest('[style*="position: fixed"]') || el.closest('[style*="position:fixed"]') || el.parentElement;
+                if (container && !container.dataset.igCleanHidden) {
+                    container.style.display = 'none';
+                    container.dataset.igCleanHidden = 'true';
+                    console.log('[IG-Clean] Hidden "New Posts" banner');
+                }
+            }
+        }
+    }
+
+    // Hide "Download App" / "Open in app" banner (mobile web)
+    // NOTE: The exact button text varies by region and Instagram version.
+    // If the banner persists, share the button's visible text.
+    function hideDownloadAppBanner(root) {
+        if (!config.hideDownloadAppBanner) return;
+        const TEXTS = new Set(['Open in app', 'Get the app', 'Install app', 'Open in Instagram', 'App öffnen', 'Ouvrir dans l\'app']);
+        for (const el of (root || document).querySelectorAll('[role="button"], button, a')) {
+            if (TEXTS.has(el.textContent?.trim())) {
+                let banner = el.parentElement;
+                // Walk up to find the top-level banner container (typically 2-4 levels up)
+                for (let i = 0; i < 4; i++) {
+                    if (!banner || banner === document.body) break;
+                    const style = banner.getAttribute('style') || '';
+                    if (style.includes('position: fixed') || style.includes('position:fixed') || banner.tagName === 'HEADER') break;
+                    banner = banner.parentElement;
+                }
+                if (banner && banner !== document.body && !banner.dataset.igCleanHidden) {
+                    banner.style.display = 'none';
+                    banner.dataset.igCleanHidden = 'true';
+                    console.log('[IG-Clean] Hidden "Download App" banner');
+                }
+            }
+        }
+    }
+
+    // Hide "Boost Post" / Professional Dashboard upsell buttons
+    // NOTE: These appear on post cards. The text varies; add more variants if
+    // you still see upsell buttons after enabling this.
+    const BOOST_TEXTS = new Set([
+        'Boost post', 'Boost Post', 'Boost reel', 'Boost Reel',
+        'View professional dashboard', 'View Professional Dashboard',
+        'Get more reach', 'Promote',
+    ]);
+
+    function hideBoostButtons(root) {
+        if (!config.hideBoostButtons) return;
+        for (const el of (root || document).querySelectorAll('[role="button"], button')) {
+            if (BOOST_TEXTS.has(el.textContent?.trim()) && !el.dataset.igCleanHidden) {
+                el.style.display = 'none';
+                el.dataset.igCleanHidden = 'true';
+            }
+        }
+    }
+
+    // Hide Stories bar — targets the stable data-pagelet attribute on the tray container
+    function hideStoriesBar() {
+        if (!config.hideStoriesBar) return;
+        const tray = document.querySelector('[data-pagelet="story_tray"]');
+        if (tray && !tray.dataset.igCleanHidden) {
+            tray.style.display = 'none';
+            tray.dataset.igCleanHidden = 'true';
+            console.log('[IG-Clean] Hidden Stories bar');
+        }
+    }
+
+    // Run all DOM scan features
+    function runDomFeatures(root) {
+        autoDismissCookieBanner(root);
+        hideNewPostsBanner(root);
+        hideDownloadAppBanner(root);
+        hideBoostButtons(root);
+        muteVideos(root);
+    }
+
+    // === SESSION POST LIMIT ===
+    let sessionPostCount = 0;
+    let limitShown = false;
+
+    function checkSessionLimit() {
+        const limit = config.sessionPostLimit;
+        if (!limit || limit <= 0 || limitShown) return;
+        sessionPostCount++;
+        if (sessionPostCount >= limit) {
+            limitShown = true;
+            showSessionLimitWall(limit);
+        }
+    }
+
+    function showSessionLimitWall(limit) {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:99999;display:flex;flex-direction:column;justify-content:center;align-items:center;font-family:-apple-system,sans-serif;';
+
+        const box = document.createElement('div');
+        box.style.cssText = 'text-align:center;color:white;padding:32px;max-width:320px;';
+
+        const heading = document.createElement('h2');
+        heading.textContent = `${limit} posts.`;
+        heading.style.cssText = 'margin:0 0 8px;font-size:28px;font-weight:700;';
+
+        const sub = document.createElement('p');
+        sub.textContent = 'You set a limit. That\'s probably enough.';
+        sub.style.cssText = 'color:#aaa;margin:0 0 32px;font-size:16px;line-height:1.5;';
+
+        const continueBtn = document.createElement('button');
+        continueBtn.textContent = 'Keep scrolling anyway';
+        continueBtn.style.cssText = 'padding:12px 24px;background:transparent;color:#666;border:1px solid #444;border-radius:10px;font-size:14px;cursor:pointer;display:block;width:100%;';
+        continueBtn.addEventListener('click', () => {
+            overlay.remove();
+            limitShown = false;
+            sessionPostCount = 0;
+        });
+
+        box.appendChild(heading);
+        box.appendChild(sub);
+        box.appendChild(continueBtn);
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+        console.log(`[IG-Clean] Session limit of ${limit} posts reached.`);
+    }
+
+    // === DATA FILTERING ===
 
     function filterEdges(edges, contextName) {
         if (!Array.isArray(edges)) return edges;
+        const before = edges.length;
 
-        const originalLength = edges.length;
         const filtered = edges.filter(edge => {
-            if (!edge || !edge.node) return true;
+            if (!edge?.node) return true;
             const node = edge.node;
 
             if (config.removeSponsored) {
-                if (node.ad) {
-                    console.log(`[IG-Clean] Removing SPONSORED post (ad_id: ${node.ad.ad_id || 'unknown'})`);
-                    cleanedCount.ads++;
-                    return false;
-                }
-                if (node.media && (node.media.ad_id || node.media.is_sponsored === true || node.media.product_type === 'ad')) {
-                    console.log(`[IG-Clean] Removing SPONSORED media (backup check)`);
-                    cleanedCount.ads++;
-                    return false;
+                if (node.ad) { cleanedCount.ads++; return false; }
+                if (node.media?.ad_id || node.media?.is_sponsored === true || node.media?.product_type === 'ad') {
+                    cleanedCount.ads++; return false;
                 }
             }
 
             if (config.removeSuggested) {
-                if (node.suggested_users) {
-                    console.log(`[IG-Clean] Removing SUGGESTED USERS card`);
-                    cleanedCount.suggested++;
+                if (node.suggested_users) { cleanedCount.suggested++; return false; }
+                if (node.explore_story)   { cleanedCount.suggested++; return false; }
+            }
+
+            if (config.filterCollabPosts) {
+                const producers = node.coauthor_producers ?? node.media?.coauthor_producers;
+                if (Array.isArray(producers) && producers.length > 0) {
+                    console.log('[IG-Clean] Removing COLLAB post');
                     return false;
                 }
-                if (node.explore_story) {
-                    console.log(`[IG-Clean] Removing SUGGESTED POST (explore_story)`);
-                    cleanedCount.suggested++;
+            }
+
+            // ai_label_info.gen_ai_detection_method is non-null for AI posts.
+            // Confirmed values from live HAR: "CLASSIFIER_SCORE_HIGH", "AI_CREATED".
+            if (config.filterAiContent) {
+                const aiInfo = node.ai_label_info ?? node.media?.ai_label_info;
+                if (aiInfo?.gen_ai_detection_method) {
+                    console.log('[IG-Clean] Removing AI post:', aiInfo.gen_ai_detection_method);
+                    return false;
+                }
+            }
+
+            // NOTE: 'Add Yours' sticker detection in main-feed posts is uncertain.
+            // The sticker structure may differ from Stories stickers. Enable this
+            // toggle and check the console — if nothing logs, the field name is wrong.
+            if (config.filterAddYours) {
+                const media = node.media || node;
+                const stickers = media.story_bloks_stickers || media.stickers;
+                if (Array.isArray(stickers) && stickers.some(s =>
+                    s.type === 'add_yours' || s.bloks_sticker?.sticker_type === 'add_yours'
+                )) {
+                    console.log('[IG-Clean] Removing Add Yours post');
                     return false;
                 }
             }
@@ -502,41 +711,25 @@
             return true;
         });
 
-        if (filtered.length < originalLength) {
-            console.log(`[IG-Clean] Filtered ${contextName}: ${originalLength} -> ${filtered.length} edges`);
+        if (filtered.length < before) {
+            console.log(`[IG-Clean] ${contextName}: ${before} → ${filtered.length}`);
         }
         return filtered;
     }
 
     function filterFeedItems(feedItems, contextName) {
         if (!Array.isArray(feedItems)) return feedItems;
-
-        const originalLength = feedItems.length;
+        const before = feedItems.length;
         const filtered = feedItems.filter(item => {
             if (!item) return true;
-            if (config.removeSponsored && item.ad) {
-                console.log(`[IG-Clean] Removing SPONSORED from ${contextName}`);
-                cleanedCount.ads++;
-                return false;
-            }
+            if (config.removeSponsored && item.ad) { cleanedCount.ads++; return false; }
             if (config.removeSuggested) {
-                if (item.suggested_users) {
-                    console.log(`[IG-Clean] Removing SUGGESTED from ${contextName}`);
-                    cleanedCount.suggested++;
-                    return false;
-                }
-                if (item.explore_story) {
-                    console.log(`[IG-Clean] Removing SUGGESTED POST from ${contextName}`);
-                    cleanedCount.suggested++;
-                    return false;
-                }
+                if (item.suggested_users) { cleanedCount.suggested++; return false; }
+                if (item.explore_story)   { cleanedCount.suggested++; return false; }
             }
             return true;
         });
-
-        if (filtered.length < originalLength) {
-            console.log(`[IG-Clean] Filtered ${contextName}: ${originalLength} -> ${filtered.length} items`);
-        }
+        if (filtered.length < before) console.log(`[IG-Clean] ${contextName}: ${before} → ${filtered.length}`);
         return filtered;
     }
 
@@ -547,11 +740,8 @@
             obj.xdt_api__v1__feed__timeline__connection.edges =
                 filterEdges(obj.xdt_api__v1__feed__timeline__connection.edges, `Deep(${path})`);
         }
-
         if (config.removeSponsored && obj.xdt_injected_story_units?.ad_media_items?.length > 0) {
-            const count = obj.xdt_injected_story_units.ad_media_items.length;
-            console.log(`[IG-Clean] Found ${count} story ads at path: ${path}`);
-            cleanedCount.ads += count;
+            cleanedCount.ads += obj.xdt_injected_story_units.ad_media_items.length;
             obj.xdt_injected_story_units.ad_media_items = [];
         }
 
@@ -562,13 +752,10 @@
             for (let i = 0; i < obj.require.length; i++) {
                 const req = obj.require[i];
                 if (Array.isArray(req)) {
-                    for (let j = 0; j < req.length; j++) {
-                        deepCleanFeedData(req[j], depth + 1, path + `.require[${i}][${j}]`);
-                    }
+                    for (let j = 0; j < req.length; j++) deepCleanFeedData(req[j], depth + 1, path + `.require[${i}][${j}]`);
                 }
             }
         }
-
         if (obj.__bbox) deepCleanFeedData(obj.__bbox, depth + 1, path + '.__bbox');
     }
 
@@ -591,9 +778,7 @@
                 const groups = edge?.node?.end_of_feed_demarcator?.group_set?.groups;
                 if (Array.isArray(groups)) {
                     for (const group of groups) {
-                        if (group.feed_items) {
-                            group.feed_items = filterFeedItems(group.feed_items, 'End of Feed');
-                        }
+                        if (group.feed_items) group.feed_items = filterFeedItems(group.feed_items, 'End of Feed');
                     }
                 }
             }
@@ -601,10 +786,7 @@
 
         if (config.removeSponsored && obj.data?.xdt_injected_story_units?.ad_media_items) {
             const count = obj.data.xdt_injected_story_units.ad_media_items.length;
-            if (count > 0) {
-                obj.data.xdt_injected_story_units.ad_media_items = [];
-                cleanedCount.ads += count;
-            }
+            if (count > 0) { obj.data.xdt_injected_story_units.ad_media_items = []; cleanedCount.ads += count; }
         }
 
         if (obj.result?.data?.xdt_api__v1__feed__timeline__connection?.edges) {
@@ -617,31 +799,25 @@
 
     JSON.parse = function (text, reviver) {
         const data = originalParse.call(JSON, text, reviver);
-        try {
-            if (data && typeof data === 'object') cleanFeedData(data);
-        } catch (e) {
-            console.error('[IG-Clean] Error in JSON.parse hook:', e);
-        }
+        try { if (data && typeof data === 'object') cleanFeedData(data); }
+        catch (e) { console.error('[IG-Clean] JSON.parse hook error:', e); }
         return data;
     };
 
     Response.prototype.json = async function () {
         const data = await originalResponseJson.call(this);
-        try {
-            if (data && typeof data === 'object') cleanFeedData(data);
-        } catch (e) {
-            console.error('[IG-Clean] Error in Response.json hook:', e);
-        }
+        try { if (data && typeof data === 'object') cleanFeedData(data); }
+        catch (e) { console.error('[IG-Clean] Response.json hook error:', e); }
         return data;
     };
 
     setInterval(() => {
         if (cleanedCount.ads > 0 || cleanedCount.suggested > 0) {
-            console.log(`[IG-Clean] Stats - Removed ${cleanedCount.ads} ads, ${cleanedCount.suggested} suggested cards`);
+            console.log(`[IG-Clean] Stats — ${cleanedCount.ads} ads, ${cleanedCount.suggested} suggested removed`);
         }
     }, 30000);
 
-    // === VISUAL FALLBACK ===
+    // === VISUAL BLUR FALLBACK ===
 
     const SPONSORED_LABELS = new Set([
         'Sponsored', 'Sponzorováno', 'Patrocinado', 'Sponsorisé', 'Gesponsert',
@@ -653,22 +829,11 @@
         'Suggested for you', 'Suggested posts',
         'Navrhované pro vás', 'Návrhy pro vás',
         'Sugeridas para ti', 'Publicaciones sugeridas',
-        'Suggestions pour vous',
-        'Vorgeschlagene Beiträge',
-        'Suggeriti per te',
-        'Voorgesteld voor jou',
-        'Föreslagna för dig',
-        'Sugerowane dla ciebie',
-        'Рекомендации для вас',
-        'Sugestões para você',
-        'اقتراحات لك',
-        '회원님을 위한 추천',
-        'あなたへのおすすめ',
-        '为您推荐',
-        'Disarankan untuk Anda',
-        // Follow-button variants (checked separately against button role)
-        'Follow', 'Sledovat', 'Seguir', 'Suivre', 'Folgen', 'Seguire',
-        'Volgen', '팔로우', 'フォロー', '关注',
+        'Suggestions pour vous', 'Vorgeschlagene Beiträge',
+        'Suggeriti per te', 'Voorgesteld voor jou', 'Föreslagna för dig',
+        'Sugerowane dla ciebie', 'Рекомендации для вас', 'Sugestões para você',
+        'اقتراحات لك', '회원님을 위한 추천', 'あなたへのおすすめ', '为您推荐', 'Disarankan untuk Anda',
+        'Follow', 'Sledovat', 'Seguir', 'Suivre', 'Folgen', 'Seguire', 'Volgen', '팔로우', 'フォロー', '关注',
     ]);
 
     const FOLLOW_LABELS = new Set([
@@ -676,48 +841,24 @@
         'Volgen', '팔로우', 'フォロー', '关注',
     ]);
 
-    const style = document.createElement('style');
-    style.textContent = `
-        .ig-clean-blurred {
-            filter: blur(8px) !important;
-            opacity: 0.3 !important;
-            pointer-events: none !important;
-            transition: filter 0.3s, opacity 0.3s;
-        }
-        .ig-clean-blurred::before {
-            content: "Filtered";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 4px;
-            font-size: 14px;
-            z-index: 1000;
-            pointer-events: none;
-        }
-    `;
-    (document.head || document.documentElement).appendChild(style);
-
     const processedArticles = new WeakSet();
 
     function processArticle(article) {
         if (processedArticles.has(article)) return;
         processedArticles.add(article);
 
+        checkSessionLimit();
+
         if (article.querySelector('a[href^="https://www.facebook.com/ads/"]')) {
-            blurArticle(article, 'ad-link');
-            return;
+            if (config.blurSponsored) { blurArticle(article, 'ad-link'); return; }
         }
 
         for (const el of article.querySelectorAll('span, a, div[role="button"], button')) {
             const text = el.textContent?.trim();
             if (!text) continue;
 
-            if (SPONSORED_LABELS.has(text)) {
-                if (config.blurSponsored) { blurArticle(article, `Sponsored ("${text}")`); return; }
+            if (SPONSORED_LABELS.has(text) && config.blurSponsored) {
+                blurArticle(article, `Sponsored ("${text}")`); return;
             }
 
             if (SUGGESTED_LABELS.has(text)) {
@@ -728,6 +869,8 @@
                 if (config.blurSuggested) { blurArticle(article, `Suggested ("${text}")`); return; }
             }
         }
+
+        if (config.hideBoostButtons) hideBoostButtons(article);
     }
 
     function blurArticle(article, reason) {
@@ -742,42 +885,77 @@
         (root || document).querySelectorAll('article').forEach(processArticle);
     }
 
-    const runInitialScan = () => {
-        setTimeout(() => scanForAdsInDOM(document), 1500);
-        setTimeout(() => scanForAdsInDOM(document), 3500);
+    // === STARTUP SCANS ===
+    const runInitialScans = () => {
+        setTimeout(() => {
+            scanForAdsInDOM(document);
+            runDomFeatures(document);
+            hideSidebarItems();
+            hideStoriesBar();
+        }, 1500);
+        setTimeout(() => {
+            scanForAdsInDOM(document);
+            runDomFeatures(document);
+            hideSidebarItems();
+        }, 3500);
     };
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', runInitialScan);
+        document.addEventListener('DOMContentLoaded', runInitialScans);
     } else {
-        runInitialScan();
+        runInitialScans();
     }
 
-    const observer = new MutationObserver((mutations) => {
-        if (!observer.scanScheduled) {
-            observer.scanScheduled = true;
-            setTimeout(() => {
-                for (const m of mutations) {
-                    for (const node of m.addedNodes) {
-                        if (node.nodeType !== 1) continue;
-                        node.tagName === 'ARTICLE' ? processArticle(node) : scanForAdsInDOM(node);
+    // === OBSERVERS ===
+    const feedObserver = new MutationObserver((mutations) => {
+        if (feedObserver.scheduled) return;
+        feedObserver.scheduled = true;
+        setTimeout(() => {
+            for (const m of mutations) {
+                for (const node of m.addedNodes) {
+                    if (node.nodeType !== 1) continue;
+                    if (node.tagName === 'ARTICLE') {
+                        processArticle(node);
+                    } else {
+                        scanForAdsInDOM(node);
+                        runDomFeatures(node);
                     }
                 }
-                observer.scanScheduled = false;
-            }, 500);
-        }
+            }
+            feedObserver.scheduled = false;
+        }, 500);
     });
 
-    const startObserver = () => {
+    const sidebarObserver = new MutationObserver(() => {
+        if (sidebarObserver.scheduled) return;
+        sidebarObserver.scheduled = true;
+        setTimeout(() => { hideSidebarItems(); sidebarObserver.scheduled = false; }, 500);
+    });
+
+    const startObservers = () => {
         const mainContainer = document.querySelector('main') || document.body;
-        observer.observe(mainContainer, { childList: true, subtree: true });
-        console.log('[IG-Clean] Blur fallback observer started');
+        feedObserver.observe(mainContainer, { childList: true, subtree: true });
+
+        const sidebar = document.querySelector('nav[role="navigation"]') || document.querySelector('div[role="navigation"]')?.closest('div');
+        if (sidebar) sidebarObserver.observe(sidebar, { childList: true, subtree: true });
+
+        console.log('[IG-Clean] Observers started');
     };
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', startObserver);
+        document.addEventListener('DOMContentLoaded', startObservers);
     } else {
-        setTimeout(startObserver, 100);
+        setTimeout(startObservers, 100);
     }
+
+    // Watch document.body directly for cookie/modal dialogs — they are appended
+    // outside <main> so the feed observer misses them.
+    const startBodyObserver = () => {
+        new MutationObserver(() => autoDismissCookieBanner(document))
+            .observe(document.body, { childList: true });
+    };
+    document.readyState === 'loading'
+        ? document.addEventListener('DOMContentLoaded', startBodyObserver)
+        : startBodyObserver();
 
 })();
