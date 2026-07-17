@@ -658,6 +658,8 @@
 
     function filterEdges(edges, contextName) {
         if (!Array.isArray(edges)) return edges;
+        // Signal to the health-check userscript that the feed timeline key is still valid
+        if (edges.length > 0) sessionStorage.setItem('ig_clean_feed_seen', '1');
         const before = edges.length;
 
         const filtered = edges.filter(edge => {
