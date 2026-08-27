@@ -4,6 +4,9 @@
 // @version      1.2
 // @description  Verifies IG Clean selectors still resolve; opens a GitHub PR when they break
 // @author       Lukas Westholt
+// @license      MIT
+// @homepageURL  https://github.com/LukasWestholt/instagram-distraction-free-js
+// @supportURL   https://github.com/LukasWestholt/instagram-distraction-free-js/issues
 // @match        https://www.instagram.com/*
 // @grant        GM_getValue
 // @grant        GM_setValue

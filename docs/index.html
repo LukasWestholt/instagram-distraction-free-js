@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Instagram Distraction Free</title>
+        <meta
+            name="description"
+            content="Remove sponsored and suggested posts, reels, and explore tabs from Instagram."
+        />
+        <style>
+            :root {
+                color-scheme: light dark;
+                --bg: #f7f7f8;
+                --card: #ffffff;
+                --text: #1a1a1a;
+                --muted: #5b5b63;
+                --border: #e3e3e6;
+                --accent: #d6249f;
+                --accent-2: #6559ca;
+                --code-bg: #f0f0f2;
+            }
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --bg: #121214;
+                    --card: #1b1b1e;
+                    --text: #f0f0f2;
+                    --muted: #a3a3ab;
+                    --border: #2c2c30;
+                    --code-bg: #232326;
+                }
+            }
+            * {
+                box-sizing: border-box;
+            }
+            body {
+                margin: 0;
+                background: var(--bg);
+                color: var(--text);
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                line-height: 1.55;
+            }
+            .wrap {
+                max-width: 720px;
+                margin: 0 auto;
+                padding: 3rem 1.25rem 4rem;
+            }
+            header {
+                text-align: center;
+                margin-bottom: 2.5rem;
+            }
+            .badge {
+                display: inline-block;
+                font-size: 0.75rem;
+                font-weight: 600;
+                letter-spacing: 0.03em;
+                text-transform: uppercase;
+                color: var(--muted);
+                border: 1px solid var(--border);
+                border-radius: 999px;
+                padding: 0.25rem 0.75rem;
+                margin-bottom: 1rem;
+            }
+            h1 {
+                font-size: 2rem;
+                margin: 0 0 0.5rem;
+                background: linear-gradient(90deg, var(--accent), var(--accent-2));
+                -webkit-background-clip: text;
+                background-clip: text;
+                color: transparent;
+            }
+            .tagline {
+                color: var(--muted);
+                font-size: 1.05rem;
+                margin: 0;
+            }
+            .card {
+                background: var(--card);
+                border: 1px solid var(--border);
+                border-radius: 14px;
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            .card h2 {
+                margin-top: 0;
+                font-size: 1.15rem;
+            }
+            .btn {
+                display: inline-block;
+                text-decoration: none;
+                font-weight: 600;
+                padding: 0.75rem 1.5rem;
+                border-radius: 10px;
+                color: #fff;
+                background: linear-gradient(90deg, var(--accent), var(--accent-2));
+                transition: opacity 0.15s ease;
+            }
+            .btn:hover {
+                opacity: 0.88;
+            }
+            .btn.secondary {
+                background: none;
+                color: var(--text);
+                border: 1px solid var(--border);
+            }
+            .btn-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.75rem;
+                margin-top: 1rem;
+            }
+            .steps {
+                margin: 0;
+                padding-left: 1.25rem;
+            }
+            .steps li {
+                margin-bottom: 0.5rem;
+            }
+            a {
+                color: var(--accent-2);
+            }
+            code {
+                background: var(--code-bg);
+                border-radius: 4px;
+                padding: 0.1rem 0.4rem;
+                font-size: 0.9em;
+            }
+            details {
+                border: 1px solid var(--border);
+                border-radius: 10px;
+                padding: 0.75rem 1rem;
+                margin-top: 0.75rem;
+            }
+            details + details {
+                margin-top: 0.5rem;
+            }
+            summary {
+                cursor: pointer;
+                font-weight: 600;
+            }
+            summary::marker {
+                color: var(--accent-2);
+            }
+            details[open] summary {
+                margin-bottom: 0.5rem;
+            }
+            footer {
+                text-align: center;
+                color: var(--muted);
+                font-size: 0.85rem;
+                margin-top: 2.5rem;
+            }
+            footer a {
+                color: var(--muted);
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrap">
+            <header>
+                <span class="badge">Userscript &middot; MIT licensed</span>
+                <h1>Instagram Distraction Free</h1>
+                <p class="tagline">
+                    Remove sponsored posts, suggested content, reels, and the explore tab &mdash; keep the people you
+                    actually follow.
+                </p>
+            </header>
+
+            <div class="card">
+                <h2>1. Install a userscript manager</h2>
+                <p>This runs as a userscript, so your browser needs an extension to run it first.</p>
+                <div class="btn-row">
+                    <a
+                        class="btn secondary"
+                        href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo"
+                        >Tampermonkey &mdash; Chrome</a
+                    >
+                    <a class="btn secondary" href="https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/"
+                        >Tampermonkey &mdash; Firefox</a
+                    >
+                    <a class="btn secondary" href="https://apps.apple.com/us/app/tampermonkey/id6738342400"
+                        >Tampermonkey &mdash; iOS Safari</a
+                    >
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>2. Install the script</h2>
+                <p>With Tampermonkey installed, this link opens the install dialog automatically.</p>
+                <div class="btn-row">
+                    <a
+                        class="btn"
+                        href="https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js"
+                        >Install Instagram Distraction Free</a
+                    >
+                </div>
+
+                <details>
+                    <summary>iOS Safari &mdash; a few extra steps</summary>
+                    <ol class="steps">
+                        <li>
+                            Install
+                            <a href="https://apps.apple.com/us/app/tampermonkey/id6738342400">Tampermonkey</a> or
+                            <a href="https://apps.apple.com/us/app/userscripts/id1463298887">Userscripts</a> from the
+                            App Store.
+                        </li>
+                        <li>
+                            Open <strong>Settings &rarr; Apps &rarr; Safari &rarr; Extensions</strong>, tap your
+                            extension, and switch it on.
+                        </li>
+                        <li>
+                            Under &ldquo;Allow Extension to Read and Modify Webpages&rdquo;, set
+                            <strong>instagram.com</strong> (or All Websites) to <strong>Allow</strong>.
+                        </li>
+                        <li>
+                            Tap the install link above from Safari. With Userscripts, long-press it, choose
+                            <em>Download Linked File</em>, and save it to your configured sync folder instead.
+                        </li>
+                    </ol>
+                </details>
+
+                <details>
+                    <summary>Optional: health check script</summary>
+                    <p>
+                        Monitors whether the script's selectors still work after Instagram updates, and can
+                        automatically file a GitHub issue when something breaks. Install the same way as the main
+                        script:
+                    </p>
+                    <div class="btn-row">
+                        <a
+                            class="btn secondary"
+                            href="https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/ig_clean_healthcheck.user.js"
+                            >Install Health Check</a
+                        >
+                    </div>
+                </details>
+            </div>
+
+            <div class="card">
+                <h2>3. Open Instagram</h2>
+                <p>
+                    Visit <a href="https://www.instagram.com">instagram.com</a> &mdash; the script activates
+                    automatically. Look for the <strong>&ldquo;IG Clean&rdquo;</strong> button (bottom-left on desktop,
+                    bottom-right on mobile/iOS) to configure what gets filtered.
+                </p>
+            </div>
+
+            <footer>
+                <a href="https://github.com/LukasWestholt/instagram-distraction-free-js">Source on GitHub</a>
+                &middot;
+                <a href="https://github.com/LukasWestholt/instagram-distraction-free-js#readme">Full documentation</a>
+                &middot;
+                <a href="https://github.com/LukasWestholt/instagram-distraction-free-js/issues">Report an issue</a>
+            </footer>
+        </div>
+    </body>
+</html>
