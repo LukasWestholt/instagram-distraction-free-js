@@ -6,251 +6,771 @@
         <title>Instagram Distraction Free</title>
         <meta
             name="description"
-            content="Remove sponsored and suggested posts, reels, and explore tabs from Instagram."
+            content="A userscript that strips sponsored posts, suggested content, and dark patterns from Instagram before they render."
+        />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Archivo:wght@800;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+            rel="stylesheet"
         />
         <style>
             :root {
                 color-scheme: light dark;
-                --bg: #f7f7f8;
-                --card: #ffffff;
-                --text: #1a1a1a;
-                --muted: #5b5b63;
-                --border: #e3e3e6;
-                --accent: #d6249f;
-                --accent-2: #6559ca;
-                --code-bg: #f0f0f2;
+                --paper: #efeee6;
+                --paper-raised: #faf9f3;
+                --ink: #17160f;
+                --ink-soft: #5c5a4c;
+                --line: #d9d6c7;
+                --stamp: #c23b1e;
+                --stamp-ink: #fbede4;
+                --tab: #c6862e;
+                --focus: #17160f;
+                --font-display: 'Archivo', 'Arial Narrow', sans-serif;
+                --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+                --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
             }
             @media (prefers-color-scheme: dark) {
                 :root {
-                    --bg: #121214;
-                    --card: #1b1b1e;
-                    --text: #f0f0f2;
-                    --muted: #a3a3ab;
-                    --border: #2c2c30;
-                    --code-bg: #232326;
+                    --paper: #131209;
+                    --paper-raised: #1d1b12;
+                    --ink: #f0eee2;
+                    --ink-soft: #a9a58e;
+                    --line: #33301e;
+                    --stamp: #e05a37;
+                    --stamp-ink: #1b0d08;
+                    --tab: #e0a542;
+                    --focus: #f0eee2;
                 }
             }
+
             * {
                 box-sizing: border-box;
             }
+            html {
+                -webkit-text-size-adjust: 100%;
+            }
             body {
                 margin: 0;
-                background: var(--bg);
-                color: var(--text);
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+                background: var(--paper);
+                color: var(--ink);
+                font-family: var(--font-body);
                 line-height: 1.55;
+                -webkit-font-smoothing: antialiased;
             }
-            .wrap {
-                max-width: 720px;
-                margin: 0 auto;
-                padding: 3rem 1.25rem 4rem;
-            }
-            header {
-                text-align: center;
-                margin-bottom: 2.5rem;
-            }
-            .badge {
-                display: inline-block;
-                font-size: 0.75rem;
-                font-weight: 600;
-                letter-spacing: 0.03em;
-                text-transform: uppercase;
-                color: var(--muted);
-                border: 1px solid var(--border);
-                border-radius: 999px;
-                padding: 0.25rem 0.75rem;
-                margin-bottom: 1rem;
-            }
-            h1 {
-                font-size: 2rem;
-                margin: 0 0 0.5rem;
-                background: linear-gradient(90deg, var(--accent), var(--accent-2));
-                -webkit-background-clip: text;
-                background-clip: text;
-                color: transparent;
-            }
-            .tagline {
-                color: var(--muted);
-                font-size: 1.05rem;
-                margin: 0;
-            }
-            .card {
-                background: var(--card);
-                border: 1px solid var(--border);
-                border-radius: 14px;
-                padding: 1.5rem;
-                margin-bottom: 1.5rem;
-            }
-            .card h2 {
-                margin-top: 0;
-                font-size: 1.15rem;
-            }
-            .btn {
-                display: inline-block;
-                text-decoration: none;
-                font-weight: 600;
-                padding: 0.75rem 1.5rem;
-                border-radius: 10px;
-                color: #fff;
-                background: linear-gradient(90deg, var(--accent), var(--accent-2));
-                transition: opacity 0.15s ease;
-            }
-            .btn:hover {
-                opacity: 0.88;
-            }
-            .btn.secondary {
-                background: none;
-                color: var(--text);
-                border: 1px solid var(--border);
-            }
-            .btn-row {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 0.75rem;
-                margin-top: 1rem;
-            }
-            .steps {
-                margin: 0;
-                padding-left: 1.25rem;
-            }
-            .steps li {
-                margin-bottom: 0.5rem;
+            :focus-visible {
+                outline: 2px solid var(--focus);
+                outline-offset: 3px;
             }
             a {
-                color: var(--accent-2);
+                color: inherit;
             }
-            code {
-                background: var(--code-bg);
-                border-radius: 4px;
-                padding: 0.1rem 0.4rem;
-                font-size: 0.9em;
+            .wrap {
+                max-width: 780px;
+                margin: 0 auto;
+                padding: 0 1.5rem;
             }
-            details {
-                border: 1px solid var(--border);
-                border-radius: 10px;
-                padding: 0.75rem 1rem;
+
+            /* ---------- nav ---------- */
+            .bar {
+                border-bottom: 1px solid var(--line);
+            }
+            .bar__row {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 1.1rem 0;
+                font-family: var(--font-mono);
+                font-size: 0.78rem;
+            }
+            .bar__mark {
+                font-weight: 600;
+                letter-spacing: 0.02em;
+            }
+            .bar__meta {
+                display: flex;
+                gap: 1rem;
+                color: var(--ink-soft);
+            }
+            .bar__meta a {
+                text-decoration: none;
+                border-bottom: 1px solid transparent;
+            }
+            .bar__meta a:hover {
+                border-color: var(--ink-soft);
+            }
+
+            /* ---------- hero ---------- */
+            .hero {
+                padding: 3.25rem 0 3rem;
+                display: grid;
+                gap: 2.5rem;
+            }
+            .hero__eyebrow {
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: var(--stamp);
+                margin: 0 0 0.9rem;
+            }
+            .hero__title {
+                font-family: var(--font-display);
+                font-weight: 900;
+                text-transform: uppercase;
+                font-size: clamp(2rem, 6.4vw, 3.2rem);
+                line-height: 1.03;
+                letter-spacing: -0.01em;
+                margin: 0 0 1.1rem;
+            }
+            .hero__title em {
+                font-style: normal;
+                color: var(--stamp);
+            }
+            .hero__sub {
+                font-size: 1.02rem;
+                color: var(--ink-soft);
+                max-width: 46ch;
+                margin: 0 0 1.6rem;
+            }
+            .cta {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.6rem;
+                font-family: var(--font-mono);
+                font-weight: 600;
+                font-size: 0.85rem;
+                letter-spacing: 0.02em;
+                text-decoration: none;
+                color: var(--stamp-ink);
+                background: var(--stamp);
+                padding: 0.85rem 1.35rem;
+                border: 1px solid var(--stamp);
+                transform: rotate(-0.6deg);
+                transition:
+                    transform 0.12s ease,
+                    box-shadow 0.12s ease;
+                box-shadow: 3px 3px 0 var(--line);
+            }
+            .cta:hover {
+                transform: rotate(-0.6deg) translate(-1px, -1px);
+                box-shadow: 4px 4px 0 var(--line);
+            }
+            .cta:active {
+                transform: rotate(-0.6deg) translate(1px, 1px);
+                box-shadow: 1px 1px 0 var(--line);
+            }
+            .cta__note {
+                display: block;
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                color: var(--ink-soft);
                 margin-top: 0.75rem;
+            }
+
+            /* ---------- demo ---------- */
+            .demo {
+                justify-self: center;
+                width: 100%;
+                max-width: 320px;
+            }
+            .demo__input {
+                position: absolute;
+                opacity: 0;
+                pointer-events: none;
+            }
+            .demo__toggle {
+                display: flex;
+                align-items: center;
+                gap: 0.7rem;
+                margin-bottom: 0.9rem;
+            }
+            .demo__switch {
+                display: block;
+                width: 42px;
+                height: 24px;
+                border: 1px solid var(--ink);
+                border-radius: 999px;
+                position: relative;
+                cursor: pointer;
+                flex: none;
+            }
+            .demo__switch-thumb {
+                position: absolute;
+                top: 2px;
+                left: 2px;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: var(--ink);
+                transition: transform 0.18s cubic-bezier(0.65, 0, 0.35, 1);
+            }
+            .demo__input:checked ~ .demo__toggle .demo__switch-thumb {
+                transform: translateX(18px);
+                background: var(--tab);
+            }
+            .demo__toggle-text {
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                letter-spacing: 0.06em;
+                cursor: pointer;
+                position: relative;
+                height: 1em;
+                flex: auto;
+            }
+            .demo__state {
+                position: absolute;
+                inset: 0;
+                white-space: nowrap;
+                transition: opacity 0.15s ease;
+            }
+            .demo__state--off {
+                opacity: 1;
+                color: var(--ink-soft);
+            }
+            .demo__state--on {
+                opacity: 0;
+                color: var(--tab);
+                font-weight: 600;
+            }
+            .demo__input:checked ~ .demo__toggle .demo__state--off {
+                opacity: 0;
+            }
+            .demo__input:checked ~ .demo__toggle .demo__state--on {
+                opacity: 1;
+            }
+
+            .demo__phone {
+                background: var(--paper-raised);
+                border: 1px solid var(--line);
+                padding: 0.6rem;
+            }
+            .demo__feed {
+                display: grid;
+                gap: 0.6rem;
+            }
+            .post {
+                position: relative;
+                border: 1px solid var(--line);
+                background: var(--paper);
+                padding: 0.65rem 0.7rem;
+                overflow: hidden;
+            }
+            .post__head {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-bottom: 0.45rem;
+            }
+            .post__avatar {
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: var(--font-mono);
+                font-size: 0.6rem;
+                font-weight: 600;
+                color: var(--paper);
+                flex: none;
+            }
+            .post__handle {
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                font-weight: 500;
+            }
+            .post__tag {
+                font-family: var(--font-mono);
+                font-size: 0.6rem;
+                color: var(--ink-soft);
+                margin-left: auto;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+            .post__body {
+                font-size: 0.78rem;
+                color: var(--ink-soft);
+                margin: 0;
+            }
+
+            .post--sponsored .post__avatar {
+                background: var(--tab);
+            }
+            .post--kept .post__avatar {
+                background: var(--ink-soft);
+            }
+            .post--suggested .post__avatar {
+                background: var(--line);
+                color: var(--ink-soft);
+            }
+
+            .stamp {
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                transform: translateY(-8px) rotate(-8deg);
+                transition:
+                    opacity 0.2s ease,
+                    transform 0.2s ease;
+                background: color-mix(in srgb, var(--paper) 88%, transparent);
+            }
+            .stamp__mark {
+                font-family: var(--font-mono);
+                font-weight: 600;
+                font-size: 0.68rem;
+                letter-spacing: 0.05em;
+                color: var(--stamp);
+                border: 2px solid var(--stamp);
+                padding: 0.3rem 0.55rem;
+                transform: rotate(-6deg);
+            }
+            .demo__input:checked ~ .demo__phone .post--sponsored .stamp {
+                opacity: 1;
+                transform: translateY(0) rotate(-6deg);
+                animation: stamp-in 0.4s cubic-bezier(0.32, 1.4, 0.55, 1) backwards;
+            }
+            .demo__input:checked ~ .demo__phone .post--suggested .stamp {
+                opacity: 1;
+                transform: translateY(0) rotate(1deg);
+                animation: stamp-in 0.4s cubic-bezier(0.32, 1.4, 0.55, 1) 0.06s backwards;
+            }
+            .post--suggested .stamp {
+                background: color-mix(in srgb, var(--paper) 55%, transparent);
+            }
+            .post--suggested .stamp__mark {
+                color: var(--ink-soft);
+                border-color: var(--ink-soft);
+            }
+            @keyframes stamp-in {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px) rotate(-14deg);
+                }
+            }
+            @media (prefers-reduced-motion: reduce) {
+                .demo__input:checked ~ .demo__phone .stamp {
+                    animation: none;
+                }
+                .demo__switch-thumb,
+                .stamp,
+                .demo__state,
+                .cta {
+                    transition: none;
+                }
+            }
+
+            /* ---------- steps ---------- */
+            .steps {
+                border-top: 1px solid var(--line);
+                padding: 3rem 0;
+            }
+            .section-label {
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                letter-spacing: 0.1em;
+                text-transform: uppercase;
+                color: var(--ink-soft);
+                margin: 0 0 1.75rem;
+            }
+            .step {
+                display: grid;
+                grid-template-columns: 5.5rem 1fr;
+                gap: 1rem;
+                padding: 1.1rem 0;
+                border-top: 1px solid var(--line);
+            }
+            .step:first-of-type {
+                border-top: none;
+            }
+            .step__num {
+                font-family: var(--font-mono);
+                font-size: 0.75rem;
+                color: var(--tab);
+                padding-top: 0.15rem;
+            }
+            .step h3 {
+                font-family: var(--font-body);
+                font-size: 1rem;
+                font-weight: 600;
+                margin: 0 0 0.4rem;
+            }
+            .step p {
+                margin: 0 0 0.4rem;
+                color: var(--ink-soft);
+                font-size: 0.92rem;
+            }
+            .taglist {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+                margin-top: 0.6rem;
+            }
+            .tag-link {
+                font-family: var(--font-mono);
+                font-size: 0.72rem;
+                text-decoration: none;
+                border: 1px solid var(--line);
+                padding: 0.4rem 0.65rem;
+                color: var(--ink);
+            }
+            .tag-link:hover {
+                border-color: var(--ink);
+            }
+            .tag-link--primary {
+                border-color: var(--ink);
+                background: var(--ink);
+                color: var(--paper);
+            }
+
+            details {
+                margin-top: 0.75rem;
+                border: 1px solid var(--line);
+                padding: 0.75rem 0.9rem;
             }
             details + details {
                 margin-top: 0.5rem;
             }
             summary {
                 cursor: pointer;
-                font-weight: 600;
+                font-family: var(--font-mono);
+                font-size: 0.75rem;
+                letter-spacing: 0.03em;
+                text-transform: uppercase;
+                color: var(--ink-soft);
             }
             summary::marker {
-                color: var(--accent-2);
+                color: var(--tab);
             }
             details[open] summary {
+                margin-bottom: 0.7rem;
+                color: var(--ink);
+            }
+            details ol {
+                margin: 0;
+                padding-left: 1.1rem;
+            }
+            details li {
                 margin-bottom: 0.5rem;
+                font-size: 0.9rem;
             }
-            footer {
-                text-align: center;
-                color: var(--muted);
-                font-size: 0.85rem;
-                margin-top: 2.5rem;
+            details li:last-child {
+                margin-bottom: 0;
             }
-            footer a {
-                color: var(--muted);
+            details p {
+                font-size: 0.9rem;
+                color: var(--ink-soft);
+            }
+
+            /* ---------- ledger ---------- */
+            .ledger {
+                border-top: 1px solid var(--line);
+                padding: 3rem 0;
+            }
+            .ledger__list {
+                margin: 0;
+                padding: 0;
+                list-style: none;
+            }
+            .ledger__row {
+                display: grid;
+                grid-template-columns: 6.5rem 1fr;
+                gap: 1rem;
+                padding: 0.85rem 0;
+                border-top: 1px solid var(--line);
+                align-items: baseline;
+            }
+            .ledger__row:first-child {
+                border-top: none;
+            }
+            .ledger__status {
+                font-family: var(--font-mono);
+                font-size: 0.68rem;
+                letter-spacing: 0.03em;
+            }
+            .ledger__row--out .ledger__status {
+                color: var(--stamp);
+            }
+            .ledger__row--in .ledger__status {
+                color: var(--tab);
+            }
+            .ledger__body {
+                font-size: 0.92rem;
+                color: var(--ink-soft);
+            }
+            .ledger__body strong {
+                color: var(--ink);
+                font-weight: 600;
+            }
+
+            /* ---------- footer ---------- */
+            .site-footer {
+                border-top: 1px solid var(--line);
+                padding: 1.75rem 0 2.5rem;
+                font-family: var(--font-mono);
+                font-size: 0.75rem;
+                color: var(--ink-soft);
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem 1.25rem;
+                justify-content: space-between;
+            }
+            .site-footer a {
+                text-decoration: none;
+                border-bottom: 1px solid transparent;
+            }
+            .site-footer a:hover {
+                border-color: var(--ink-soft);
+            }
+            .site-footer__links {
+                display: flex;
+                gap: 1.25rem;
+            }
+
+            @media (min-width: 640px) {
+                .hero {
+                    grid-template-columns: 1fr 320px;
+                    align-items: center;
+                }
+                .demo {
+                    justify-self: end;
+                }
             }
         </style>
     </head>
     <body>
+        <div class="bar">
+            <div class="wrap bar__row">
+                <span class="bar__mark">IG&middot;CLEAN</span>
+                <span class="bar__meta">
+                    <span>v2.1</span>
+                    <a href="https://github.com/LukasWestholt/instagram-distraction-free-js/blob/main/LICENSE">MIT</a>
+                    <a href="https://github.com/LukasWestholt/instagram-distraction-free-js">GitHub</a>
+                </span>
+            </div>
+        </div>
+
         <div class="wrap">
-            <header>
-                <span class="badge">Userscript &middot; MIT licensed</span>
-                <h1>Instagram Distraction Free</h1>
-                <p class="tagline">
-                    Remove sponsored posts, suggested content, reels, and the explore tab &mdash; keep the people you
-                    actually follow.
-                </p>
+            <header class="hero">
+                <div>
+                    <p class="hero__eyebrow">Userscript &mdash; desktop &amp; iOS Safari</p>
+                    <h1 class="hero__title">
+                        Instagram built this feed to keep you scrolling. <em>We built it back.</em>
+                    </h1>
+                    <p class="hero__sub">
+                        A userscript that strips sponsored posts, suggested content, and read-receipts before they
+                        render &mdash; nothing to configure, nothing to trust with your login.
+                    </p>
+                    <a
+                        class="cta"
+                        href="https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js"
+                    >
+                        Install the script &rarr;
+                    </a>
+                    <span class="cta__note">Free &middot; MIT licensed &middot; runs entirely in your browser</span>
+                </div>
+
+                <div class="demo" role="group" aria-label="Before and after demo of the feed">
+                    <input
+                        type="checkbox"
+                        id="reveal"
+                        class="demo__input"
+                        checked
+                        aria-label="Toggle the feed preview between as shipped and as fixed"
+                    />
+                    <div class="demo__toggle">
+                        <label class="demo__switch" for="reveal">
+                            <span class="demo__switch-thumb"></span>
+                        </label>
+                        <label class="demo__toggle-text" for="reveal">
+                            <span class="demo__state demo__state--off">AS SHIPPED</span>
+                            <span class="demo__state demo__state--on">AS FIXED</span>
+                        </label>
+                    </div>
+                    <div class="demo__phone">
+                        <div class="demo__feed">
+                            <article class="post post--sponsored">
+                                <div class="post__head">
+                                    <span class="post__avatar">GL</span>
+                                    <span class="post__handle">glowlabs</span>
+                                    <span class="post__tag">Sponsored</span>
+                                </div>
+                                <p class="post__body">&ldquo;This serum changed my skin in 3 days.&rdquo;</p>
+                                <div class="stamp"><span class="stamp__mark">REMOVED</span></div>
+                            </article>
+
+                            <article class="post post--kept">
+                                <div class="post__head">
+                                    <span class="post__avatar">MK</span>
+                                    <span class="post__handle">mara.k</span>
+                                    <span class="post__tag">Followed</span>
+                                </div>
+                                <p class="post__body">Sunday dog tax. He is unbothered.</p>
+                            </article>
+
+                            <article class="post post--suggested">
+                                <div class="post__head">
+                                    <span class="post__avatar">+9</span>
+                                    <span class="post__handle">Suggested for you</span>
+                                </div>
+                                <p class="post__body">Accounts you don&rsquo;t follow, picked by the algorithm.</p>
+                                <div class="stamp"><span class="stamp__mark">HIDDEN</span></div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
             </header>
 
-            <div class="card">
-                <h2>1. Install a userscript manager</h2>
-                <p>This runs as a userscript, so your browser needs an extension to run it first.</p>
-                <div class="btn-row">
-                    <a
-                        class="btn secondary"
-                        href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo"
-                        >Tampermonkey &mdash; Chrome</a
-                    >
-                    <a class="btn secondary" href="https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/"
-                        >Tampermonkey &mdash; Firefox</a
-                    >
-                    <a class="btn secondary" href="https://apps.apple.com/us/app/tampermonkey/id6738342400"
-                        >Tampermonkey &mdash; iOS Safari</a
-                    >
-                </div>
-            </div>
+            <section class="steps">
+                <p class="section-label">Setup &mdash; three steps</p>
 
-            <div class="card">
-                <h2>2. Install the script</h2>
-                <p>With Tampermonkey installed, this link opens the install dialog automatically.</p>
-                <div class="btn-row">
-                    <a
-                        class="btn"
-                        href="https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js"
-                        >Install Instagram Distraction Free</a
-                    >
-                </div>
-
-                <details>
-                    <summary>iOS Safari &mdash; a few extra steps</summary>
-                    <ol class="steps">
-                        <li>
-                            Install
-                            <a href="https://apps.apple.com/us/app/tampermonkey/id6738342400">Tampermonkey</a> or
-                            <a href="https://apps.apple.com/us/app/userscripts/id1463298887">Userscripts</a> from the
-                            App Store.
-                        </li>
-                        <li>
-                            Open <strong>Settings &rarr; Apps &rarr; Safari &rarr; Extensions</strong>, tap your
-                            extension, and switch it on.
-                        </li>
-                        <li>
-                            Under &ldquo;Allow Extension to Read and Modify Webpages&rdquo;, set
-                            <strong>instagram.com</strong> (or All Websites) to <strong>Allow</strong>.
-                        </li>
-                        <li>
-                            Tap the install link above from Safari. With Userscripts, long-press it, choose
-                            <em>Download Linked File</em>, and save it to your configured sync folder instead.
-                        </li>
-                    </ol>
-                </details>
-
-                <details>
-                    <summary>Optional: health check script</summary>
-                    <p>
-                        Monitors whether the script's selectors still work after Instagram updates, and can
-                        automatically file a GitHub issue when something breaks. Install the same way as the main
-                        script:
-                    </p>
-                    <div class="btn-row">
-                        <a
-                            class="btn secondary"
-                            href="https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/ig_clean_healthcheck.user.js"
-                            >Install Health Check</a
-                        >
+                <div class="step">
+                    <span class="step__num">STEP 01/03</span>
+                    <div>
+                        <h3>Install a userscript manager</h3>
+                        <p>Your browser needs an extension to run userscripts.</p>
+                        <div class="taglist">
+                            <a
+                                class="tag-link"
+                                href="https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo"
+                                >Tampermonkey &mdash; Chrome</a
+                            >
+                            <a class="tag-link" href="https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/"
+                                >Tampermonkey &mdash; Firefox</a
+                            >
+                            <a class="tag-link" href="https://apps.apple.com/us/app/tampermonkey/id6738342400"
+                                >Tampermonkey &mdash; iOS Safari</a
+                            >
+                        </div>
                     </div>
-                </details>
-            </div>
+                </div>
 
-            <div class="card">
-                <h2>3. Open Instagram</h2>
-                <p>
-                    Visit <a href="https://www.instagram.com">instagram.com</a> &mdash; the script activates
-                    automatically. Look for the <strong>&ldquo;IG Clean&rdquo;</strong> button (bottom-left on desktop,
-                    bottom-right on mobile/iOS) to configure what gets filtered.
-                </p>
-            </div>
+                <div class="step">
+                    <span class="step__num">STEP 02/03</span>
+                    <div>
+                        <h3>Install the script</h3>
+                        <p>This link opens Tampermonkey&rsquo;s install dialog directly.</p>
+                        <div class="taglist">
+                            <a
+                                class="tag-link tag-link--primary"
+                                href="https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/instagram_distraction_free.user.js"
+                                >Install script</a
+                            >
+                        </div>
 
-            <footer>
-                <a href="https://github.com/LukasWestholt/instagram-distraction-free-js">Source on GitHub</a>
-                &middot;
-                <a href="https://github.com/LukasWestholt/instagram-distraction-free-js#readme">Full documentation</a>
-                &middot;
-                <a href="https://github.com/LukasWestholt/instagram-distraction-free-js/issues">Report an issue</a>
+                        <details>
+                            <summary>iOS Safari &mdash; a few extra steps</summary>
+                            <ol>
+                                <li>
+                                    Install
+                                    <a href="https://apps.apple.com/us/app/tampermonkey/id6738342400">Tampermonkey</a>
+                                    or
+                                    <a href="https://apps.apple.com/us/app/userscripts/id1463298887">Userscripts</a>
+                                    from the App Store.
+                                </li>
+                                <li>
+                                    Open <strong>Settings &rarr; Apps &rarr; Safari &rarr; Extensions</strong>, tap your
+                                    extension, and switch it on.
+                                </li>
+                                <li>
+                                    Under &ldquo;Allow Extension to Read and Modify Webpages&rdquo;, set
+                                    <strong>instagram.com</strong> (or All Websites) to <strong>Allow</strong>.
+                                </li>
+                                <li>
+                                    Tap the install link above from Safari. With Userscripts, long&#8209;press it,
+                                    choose
+                                    <em>Download Linked File</em>, and save it to your configured sync folder instead.
+                                </li>
+                            </ol>
+                        </details>
+
+                        <details>
+                            <summary>Optional &mdash; health check script</summary>
+                            <p>
+                                Monitors whether the script&rsquo;s selectors still work after Instagram updates, and
+                                can file a GitHub issue automatically when something breaks.
+                            </p>
+                            <div class="taglist">
+                                <a
+                                    class="tag-link"
+                                    href="https://raw.githubusercontent.com/LukasWestholt/instagram-distraction-free-js/main/ig_clean_healthcheck.user.js"
+                                    >Install health check</a
+                                >
+                            </div>
+                        </details>
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step__num">STEP 03/03</span>
+                    <div>
+                        <h3>Open Instagram</h3>
+                        <p>
+                            Visit <a href="https://www.instagram.com">instagram.com</a> &mdash; the script activates on
+                            its own. Find the <strong>&ldquo;IG Clean&rdquo;</strong> button (bottom&#8209;left on
+                            desktop, bottom&#8209;right on mobile/iOS) to change what gets filtered.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="ledger">
+                <p class="section-label">Field report &mdash; what gets touched</p>
+                <ul class="ledger__list">
+                    <li class="ledger__row ledger__row--out">
+                        <span class="ledger__status">REDACTED</span>
+                        <span class="ledger__body"
+                            ><strong>Sponsored posts.</strong> Stripped from the feed data before your browser renders
+                            them &mdash; not hidden with CSS after the fact.</span
+                        >
+                    </li>
+                    <li class="ledger__row ledger__row--out">
+                        <span class="ledger__status">REDACTED</span>
+                        <span class="ledger__body"
+                            ><strong>Suggested content.</strong> &ldquo;Suggested for you&rdquo; posts and profile
+                            cards, gone.</span
+                        >
+                    </li>
+                    <li class="ledger__row ledger__row--out">
+                        <span class="ledger__status">REDACTED</span>
+                        <span class="ledger__body"
+                            ><strong>Read receipts.</strong> The &ldquo;Seen&rdquo; timestamp is blocked before
+                            it&rsquo;s sent.</span
+                        >
+                    </li>
+                    <li class="ledger__row ledger__row--out">
+                        <span class="ledger__status">REDACTED</span>
+                        <span class="ledger__body"
+                            ><strong>Autoplay sound.</strong> Every video loads muted, by default.</span
+                        >
+                    </li>
+                    <li class="ledger__row ledger__row--out">
+                        <span class="ledger__status">REDACTED</span>
+                        <span class="ledger__body"
+                            ><strong>Notification nags.</strong> Permission dialogs are suppressed before they
+                            fire.</span
+                        >
+                    </li>
+                    <li class="ledger__row ledger__row--in">
+                        <span class="ledger__status">LEFT ALONE</span>
+                        <span class="ledger__body"
+                            >Accounts you follow, and your ability to turn any of this back off from the settings
+                            panel.</span
+                        >
+                    </li>
+                </ul>
+            </section>
+
+            <footer class="site-footer">
+                <span>This page changes nothing about your account. It changes what your browser renders.</span>
+                <span class="site-footer__links">
+                    <a href="https://github.com/LukasWestholt/instagram-distraction-free-js">Source</a>
+                    <a href="https://github.com/LukasWestholt/instagram-distraction-free-js#readme">Docs</a>
+                    <a href="https://github.com/LukasWestholt/instagram-distraction-free-js/issues">Issues</a>
+                </span>
             </footer>
         </div>
     </body>
