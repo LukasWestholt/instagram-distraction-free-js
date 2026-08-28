@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         IG Clean — Health Check
 // @namespace    ig-clean-healthcheck
-// @version      1.2
+// @version      1.3
 // @description  Verifies IG Clean selectors still resolve; opens a GitHub PR when they break
 // @author       Lukas Westholt
 // @license      MIT
@@ -20,7 +20,7 @@
 (function () {
     'use strict';
 
-    const LOG_PREFIX = '[IG-Health v1.2]';
+    const LOG_PREFIX = '[IG-Health v1.3]';
 
     const REPO = 'LukasWestholt/instagram-distraction-free-js';
     const BASE_BRANCH = 'main';
@@ -102,7 +102,9 @@
             id: 'fetch_hook',
             sessionKey: 'ig_clean_fetch_hooked',
             desc: 'fetch/XHR hook for error report suppression (`suppressErrorReports`) — hook was not installed',
-            active: () => true,
+            // Main script only sets this flag when at least one of these three toggles is on.
+            active: () =>
+                igConfig.suppressErrorReports || igConfig.suppressClientEvents || igConfig.blockDMReadReceipts,
         },
     ];
 
