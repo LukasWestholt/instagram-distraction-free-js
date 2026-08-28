@@ -11,7 +11,7 @@
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Archivo:wght@800;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Archivo:wght@800;900&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
             rel="stylesheet"
         />
         <style>
@@ -28,7 +28,6 @@
                 --focus: #17160f;
                 --font-display: 'Archivo', 'Arial Narrow', sans-serif;
                 --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-                --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
             }
             @media (prefers-color-scheme: dark) {
                 :root {
@@ -80,17 +79,16 @@
                 align-items: center;
                 justify-content: space-between;
                 padding: 1.1rem 0;
-                font-family: var(--font-mono);
-                font-size: 0.78rem;
+                font-size: 0.9rem;
             }
             .bar__mark {
                 font-weight: 600;
-                letter-spacing: 0.02em;
             }
             .bar__meta {
                 display: flex;
-                gap: 1rem;
+                gap: 1.1rem;
                 color: var(--ink-soft);
+                font-size: 0.85rem;
             }
             .bar__meta a {
                 text-decoration: none;
@@ -107,10 +105,9 @@
                 gap: 2.5rem;
             }
             .hero__eyebrow {
-                font-family: var(--font-mono);
-                font-size: 0.72rem;
-                letter-spacing: 0.12em;
-                text-transform: uppercase;
+                font-size: 0.85rem;
+                font-weight: 500;
+                letter-spacing: 0.03em;
                 color: var(--stamp);
                 margin: 0 0 0.9rem;
             }
@@ -138,10 +135,8 @@
                 display: inline-flex;
                 align-items: center;
                 gap: 0.6rem;
-                font-family: var(--font-mono);
                 font-weight: 600;
-                font-size: 0.85rem;
-                letter-spacing: 0.02em;
+                font-size: 0.95rem;
                 text-decoration: none;
                 color: var(--stamp-ink);
                 background: var(--stamp);
@@ -163,8 +158,7 @@
             }
             .cta__note {
                 display: block;
-                font-family: var(--font-mono);
-                font-size: 0.72rem;
+                font-size: 0.85rem;
                 color: var(--ink-soft);
                 margin-top: 0.75rem;
             }
@@ -211,12 +205,11 @@
                 background: var(--tab);
             }
             .demo__toggle-text {
-                font-family: var(--font-mono);
-                font-size: 0.72rem;
-                letter-spacing: 0.06em;
+                font-size: 0.85rem;
+                font-weight: 500;
                 cursor: pointer;
                 position: relative;
-                height: 1em;
+                height: 1.2em;
                 flex: auto;
             }
             .demo__state {
@@ -270,27 +263,22 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-family: var(--font-mono);
                 font-size: 0.6rem;
                 font-weight: 600;
                 color: var(--paper);
                 flex: none;
             }
             .post__handle {
-                font-family: var(--font-mono);
-                font-size: 0.72rem;
-                font-weight: 500;
+                font-size: 0.85rem;
+                font-weight: 600;
             }
             .post__tag {
-                font-family: var(--font-mono);
-                font-size: 0.6rem;
+                font-size: 0.72rem;
                 color: var(--ink-soft);
                 margin-left: auto;
-                text-transform: uppercase;
-                letter-spacing: 0.04em;
             }
             .post__body {
-                font-size: 0.78rem;
+                font-size: 0.82rem;
                 color: var(--ink-soft);
                 margin: 0;
             }
@@ -320,13 +308,14 @@
                 background: color-mix(in srgb, var(--paper) 88%, transparent);
             }
             .stamp__mark {
-                font-family: var(--font-mono);
-                font-weight: 600;
-                font-size: 0.68rem;
-                letter-spacing: 0.05em;
+                font-family: var(--font-display);
+                font-weight: 900;
+                text-transform: uppercase;
+                font-size: 0.78rem;
+                letter-spacing: 0.02em;
                 color: var(--stamp);
                 border: 2px solid var(--stamp);
-                padding: 0.3rem 0.55rem;
+                padding: 0.25rem 0.6rem;
                 transform: rotate(-6deg);
             }
             .demo__input:checked ~ .demo__phone .post--sponsored .stamp {
@@ -370,16 +359,13 @@
                 padding: 3rem 0;
             }
             .section-label {
-                font-family: var(--font-mono);
-                font-size: 0.72rem;
-                letter-spacing: 0.1em;
-                text-transform: uppercase;
-                color: var(--ink-soft);
+                font-size: 1.05rem;
+                font-weight: 600;
                 margin: 0 0 1.75rem;
             }
             .step {
                 display: grid;
-                grid-template-columns: 5.5rem 1fr;
+                grid-template-columns: 3rem 1fr;
                 gap: 1rem;
                 padding: 1.1rem 0;
                 border-top: 1px solid var(--line);
@@ -388,10 +374,11 @@
                 border-top: none;
             }
             .step__num {
-                font-family: var(--font-mono);
-                font-size: 0.75rem;
+                font-family: var(--font-display);
+                font-weight: 800;
+                font-size: 1.4rem;
                 color: var(--tab);
-                padding-top: 0.15rem;
+                line-height: 1;
             }
             .step h3 {
                 font-family: var(--font-body);
@@ -411,8 +398,7 @@
                 margin-top: 0.6rem;
             }
             .tag-link {
-                font-family: var(--font-mono);
-                font-size: 0.72rem;
+                font-size: 0.85rem;
                 text-decoration: none;
                 border: 1px solid var(--line);
                 padding: 0.4rem 0.65rem;
@@ -425,6 +411,7 @@
                 border-color: var(--ink);
                 background: var(--ink);
                 color: var(--paper);
+                font-weight: 500;
             }
 
             details {
@@ -437,10 +424,8 @@
             }
             summary {
                 cursor: pointer;
-                font-family: var(--font-mono);
-                font-size: 0.75rem;
-                letter-spacing: 0.03em;
-                text-transform: uppercase;
+                font-size: 0.92rem;
+                font-weight: 500;
                 color: var(--ink-soft);
             }
             summary::marker {
@@ -466,7 +451,7 @@
                 color: var(--ink-soft);
             }
 
-            /* ---------- ledger ---------- */
+            /* ---------- what changes ---------- */
             .ledger {
                 border-top: 1px solid var(--line);
                 padding: 3rem 0;
@@ -477,32 +462,25 @@
                 list-style: none;
             }
             .ledger__row {
-                display: grid;
-                grid-template-columns: 6.5rem 1fr;
-                gap: 1rem;
-                padding: 0.85rem 0;
+                padding: 0.9rem 0;
                 border-top: 1px solid var(--line);
-                align-items: baseline;
+                font-size: 0.95rem;
+                color: var(--ink-soft);
             }
             .ledger__row:first-child {
                 border-top: none;
             }
-            .ledger__status {
-                font-family: var(--font-mono);
-                font-size: 0.68rem;
-                letter-spacing: 0.03em;
+            .ledger__row::before {
+                content: '\2014';
+                margin-right: 0.5rem;
             }
-            .ledger__row--out .ledger__status {
+            .ledger__row--out::before {
                 color: var(--stamp);
             }
-            .ledger__row--in .ledger__status {
+            .ledger__row--in::before {
                 color: var(--tab);
             }
-            .ledger__body {
-                font-size: 0.92rem;
-                color: var(--ink-soft);
-            }
-            .ledger__body strong {
+            .ledger__row strong {
                 color: var(--ink);
                 font-weight: 600;
             }
@@ -511,8 +489,7 @@
             .site-footer {
                 border-top: 1px solid var(--line);
                 padding: 1.75rem 0 2.5rem;
-                font-family: var(--font-mono);
-                font-size: 0.75rem;
+                font-size: 0.85rem;
                 color: var(--ink-soft);
                 display: flex;
                 flex-wrap: wrap;
@@ -545,7 +522,7 @@
     <body>
         <div class="bar">
             <div class="wrap bar__row">
-                <span class="bar__mark">IG&middot;CLEAN</span>
+                <span class="bar__mark">IG Clean</span>
                 <span class="bar__meta">
                     <span>v2.1</span>
                     <a href="https://github.com/LukasWestholt/instagram-distraction-free-js/blob/main/LICENSE">MIT</a>
@@ -557,13 +534,13 @@
         <div class="wrap">
             <header class="hero">
                 <div>
-                    <p class="hero__eyebrow">Userscript &mdash; desktop &amp; iOS Safari</p>
+                    <p class="hero__eyebrow">A userscript for desktop and iOS Safari</p>
                     <h1 class="hero__title">
                         Instagram built this feed to keep you scrolling. <em>We built it back.</em>
                     </h1>
                     <p class="hero__sub">
-                        A userscript that strips sponsored posts, suggested content, and read-receipts before they
-                        render &mdash; nothing to configure, nothing to trust with your login.
+                        Strips sponsored posts, suggested content, and read-receipts before they render — nothing to
+                        configure, nothing to trust with your login.
                     </p>
                     <a
                         class="cta"
@@ -587,8 +564,8 @@
                             <span class="demo__switch-thumb"></span>
                         </label>
                         <label class="demo__toggle-text" for="reveal">
-                            <span class="demo__state demo__state--off">AS SHIPPED</span>
-                            <span class="demo__state demo__state--on">AS FIXED</span>
+                            <span class="demo__state demo__state--off">As shipped</span>
+                            <span class="demo__state demo__state--on">As fixed</span>
                         </label>
                     </div>
                     <div class="demo__phone">
@@ -596,17 +573,17 @@
                             <article class="post post--sponsored">
                                 <div class="post__head">
                                     <span class="post__avatar">GL</span>
-                                    <span class="post__handle">glowlabs</span>
+                                    <span class="post__handle">@glowlabs</span>
                                     <span class="post__tag">Sponsored</span>
                                 </div>
                                 <p class="post__body">&ldquo;This serum changed my skin in 3 days.&rdquo;</p>
-                                <div class="stamp"><span class="stamp__mark">REMOVED</span></div>
+                                <div class="stamp"><span class="stamp__mark">Removed</span></div>
                             </article>
 
                             <article class="post post--kept">
                                 <div class="post__head">
                                     <span class="post__avatar">MK</span>
-                                    <span class="post__handle">mara.k</span>
+                                    <span class="post__handle">@mara.k</span>
                                     <span class="post__tag">Followed</span>
                                 </div>
                                 <p class="post__body">Sunday dog tax. He is unbothered.</p>
@@ -618,7 +595,7 @@
                                     <span class="post__handle">Suggested for you</span>
                                 </div>
                                 <p class="post__body">Accounts you don&rsquo;t follow, picked by the algorithm.</p>
-                                <div class="stamp"><span class="stamp__mark">HIDDEN</span></div>
+                                <div class="stamp"><span class="stamp__mark">Hidden</span></div>
                             </article>
                         </div>
                     </div>
@@ -626,10 +603,10 @@
             </header>
 
             <section class="steps">
-                <p class="section-label">Setup &mdash; three steps</p>
+                <p class="section-label">Getting started</p>
 
                 <div class="step">
-                    <span class="step__num">STEP 01/03</span>
+                    <span class="step__num">01</span>
                     <div>
                         <h3>Install a userscript manager</h3>
                         <p>Your browser needs an extension to run userscripts.</p>
@@ -650,7 +627,7 @@
                 </div>
 
                 <div class="step">
-                    <span class="step__num">STEP 02/03</span>
+                    <span class="step__num">02</span>
                     <div>
                         <h3>Install the script</h3>
                         <p>This link opens Tampermonkey&rsquo;s install dialog directly.</p>
@@ -663,7 +640,7 @@
                         </div>
 
                         <details>
-                            <summary>iOS Safari &mdash; a few extra steps</summary>
+                            <summary>iOS Safari: a few extra steps</summary>
                             <ol>
                                 <li>
                                     Install
@@ -689,7 +666,7 @@
                         </details>
 
                         <details>
-                            <summary>Optional &mdash; health check script</summary>
+                            <summary>Optional: health check script</summary>
                             <p>
                                 Monitors whether the script&rsquo;s selectors still work after Instagram updates, and
                                 can file a GitHub issue automatically when something breaks.
@@ -706,7 +683,7 @@
                 </div>
 
                 <div class="step">
-                    <span class="step__num">STEP 03/03</span>
+                    <span class="step__num">03</span>
                     <div>
                         <h3>Open Instagram</h3>
                         <p>
@@ -719,48 +696,28 @@
             </section>
 
             <section class="ledger">
-                <p class="section-label">Field report &mdash; what gets touched</p>
+                <p class="section-label">What changes</p>
                 <ul class="ledger__list">
                     <li class="ledger__row ledger__row--out">
-                        <span class="ledger__status">REDACTED</span>
-                        <span class="ledger__body"
-                            ><strong>Sponsored posts.</strong> Stripped from the feed data before your browser renders
-                            them &mdash; not hidden with CSS after the fact.</span
-                        >
+                        <strong>Sponsored posts</strong> are stripped from the feed data before your browser renders
+                        them &mdash; not hidden with CSS after the fact.
                     </li>
                     <li class="ledger__row ledger__row--out">
-                        <span class="ledger__status">REDACTED</span>
-                        <span class="ledger__body"
-                            ><strong>Suggested content.</strong> &ldquo;Suggested for you&rdquo; posts and profile
-                            cards, gone.</span
-                        >
+                        <strong>Suggested content</strong> &mdash; &ldquo;suggested for you&rdquo; posts and profile
+                        cards &mdash; is gone.
                     </li>
                     <li class="ledger__row ledger__row--out">
-                        <span class="ledger__status">REDACTED</span>
-                        <span class="ledger__body"
-                            ><strong>Read receipts.</strong> The &ldquo;Seen&rdquo; timestamp is blocked before
-                            it&rsquo;s sent.</span
-                        >
+                        <strong>Read receipts</strong> are blocked; the &ldquo;Seen&rdquo; timestamp never gets sent.
                     </li>
                     <li class="ledger__row ledger__row--out">
-                        <span class="ledger__status">REDACTED</span>
-                        <span class="ledger__body"
-                            ><strong>Autoplay sound.</strong> Every video loads muted, by default.</span
-                        >
+                        <strong>Autoplay video</strong> loads muted, by default.
                     </li>
                     <li class="ledger__row ledger__row--out">
-                        <span class="ledger__status">REDACTED</span>
-                        <span class="ledger__body"
-                            ><strong>Notification nags.</strong> Permission dialogs are suppressed before they
-                            fire.</span
-                        >
+                        <strong>Notification permission dialogs</strong> are suppressed before they fire.
                     </li>
                     <li class="ledger__row ledger__row--in">
-                        <span class="ledger__status">LEFT ALONE</span>
-                        <span class="ledger__body"
-                            >Accounts you follow, and your ability to turn any of this back off from the settings
-                            panel.</span
-                        >
+                        <strong>Everything else stays</strong> &mdash; the accounts you follow, and the ability to turn
+                        any of this back off from the settings panel.
                     </li>
                 </ul>
             </section>
