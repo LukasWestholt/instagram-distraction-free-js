@@ -103,8 +103,12 @@
             sessionKey: 'ig_clean_fetch_hooked',
             desc: 'fetch/XHR hook for error report suppression (`suppressErrorReports`) — hook was not installed',
             // Main script only sets this flag when at least one of these three toggles is on.
+            // suppressErrorReports/suppressClientEvents default to true in DEFAULT_CONFIG, so an
+            // absent key (never-saved config) must fall back to that default, not to false.
             active: () =>
-                igConfig.suppressErrorReports || igConfig.suppressClientEvents || igConfig.blockDMReadReceipts,
+                (igConfig.suppressErrorReports ?? true) ||
+                (igConfig.suppressClientEvents ?? true) ||
+                (igConfig.blockDMReadReceipts ?? false),
         },
     ];
 
