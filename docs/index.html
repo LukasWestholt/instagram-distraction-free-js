@@ -78,7 +78,10 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 1.1rem 0;
+                flex-wrap: wrap;
+                gap: 0.5rem 1rem;
+                padding-top: 1.1rem;
+                padding-bottom: 1.1rem;
                 font-size: 0.9rem;
             }
             .bar__mark {
@@ -365,20 +368,36 @@
             }
             .step {
                 display: grid;
-                grid-template-columns: 3rem 1fr;
+                grid-template-columns: 3.25rem 1fr;
                 gap: 1rem;
-                padding: 1.1rem 0;
-                border-top: 1px solid var(--line);
+                padding: 1.4rem 0;
+                border-top: 1px dashed var(--line);
             }
             .step:first-of-type {
                 border-top: none;
+                padding-top: 0;
             }
             .step__num {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 2.75rem;
+                height: 2.75rem;
                 font-family: var(--font-display);
-                font-weight: 800;
-                font-size: 1.4rem;
-                color: var(--tab);
+                font-weight: 900;
+                font-size: 1.15rem;
+                color: var(--ink);
+                border: 2px solid var(--ink);
                 line-height: 1;
+            }
+            .step:nth-of-type(1) .step__num {
+                transform: rotate(-4deg);
+            }
+            .step:nth-of-type(2) .step__num {
+                transform: rotate(3deg);
+            }
+            .step:nth-of-type(3) .step__num {
+                transform: rotate(-3deg);
             }
             .step h3 {
                 font-family: var(--font-body);
@@ -398,11 +417,25 @@
                 margin-top: 0.6rem;
             }
             .tag-link {
+                position: relative;
                 font-size: 0.85rem;
                 text-decoration: none;
                 border: 1px solid var(--line);
-                padding: 0.4rem 0.65rem;
+                padding: 0.4rem 0.95rem 0.4rem 0.65rem;
                 color: var(--ink);
+                background: var(--paper-raised);
+                clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 0 100%);
+            }
+            .tag-link::after {
+                content: '';
+                position: absolute;
+                top: 0;
+                right: 0;
+                width: 9px;
+                height: 9px;
+                background: var(--paper);
+                clip-path: polygon(0 0, 100% 0, 100% 100%);
+                box-shadow: -1px 1px 0 var(--line);
             }
             .tag-link:hover {
                 border-color: var(--ink);
@@ -413,10 +446,15 @@
                 color: var(--paper);
                 font-weight: 500;
             }
+            .tag-link--primary::after {
+                background: var(--ink);
+                box-shadow: -1px 1px 0 var(--paper);
+            }
 
             details {
                 margin-top: 0.75rem;
                 border: 1px solid var(--line);
+                background: var(--paper-raised);
                 padding: 0.75rem 0.9rem;
             }
             details + details {
