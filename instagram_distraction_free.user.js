@@ -4,6 +4,9 @@
 // @version      2.1
 // @description  Remove Sponsored and Suggested posts from Instagram. Supports desktop and iOS/mobile.
 // @author       Lukas Westholt
+// @license      MIT
+// @homepageURL  https://github.com/LukasWestholt/instagram-distraction-free-js
+// @supportURL   https://github.com/LukasWestholt/instagram-distraction-free-js/issues
 // @match        *://*.instagram.com/*
 // @run-at       document-start
 // @grant        none

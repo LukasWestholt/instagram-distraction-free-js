@@ -2,6 +2,9 @@
 
 Instagram Distraction Free - Remove suggested and sponsored posts, reels and explore tabs.
 
+**[Install via the guided setup page](https://lukaswestholt.github.io/instagram-distraction-free-js/)** — the quickest
+way to get started. Or follow the manual steps below.
+
 ## Installation
 
 ### Desktop/Android (Chrome / Firefox)
