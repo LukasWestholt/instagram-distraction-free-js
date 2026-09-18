@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Instagram Distraction Free
 // @namespace    http://tampermonkey.net/
-// @version      2.2
+// @version      2.3
 // @description  Remove Sponsored and Suggested posts from Instagram. Supports desktop and iOS/mobile.
 // @author       Lukas Westholt
 // @license      MIT
@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    const LOG_PREFIX = '[IG-Clean v2.2]';
+    const LOG_PREFIX = '[IG-Clean v2.3]';
 
     console.log(`${LOG_PREFIX} initialized.`);
 
@@ -892,9 +892,9 @@
     }
 
     // Hide Stories bar — targets the stable data-pagelet attribute on the tray container
-    function hideStoriesBar() {
+    function hideStoriesBar(root) {
         if (!config.hideStoriesBar) return;
-        const tray = document.querySelector('[data-pagelet="story_tray"]');
+        const tray = (root || document).querySelector('[data-pagelet="story_tray"]');
         if (tray && !tray.dataset.igCleanHidden) {
             tray.style.display = 'none';
             tray.dataset.igCleanHidden = 'true';
@@ -910,6 +910,7 @@
         hideBoostButtons(root);
         muteVideos(root);
         hideSuggestedProfileCards(root);
+        hideStoriesBar(root);
     }
 
     // === SESSION POST LIMIT ===
@@ -1324,7 +1325,6 @@
             scanForAdsInDOM(document);
             runDomFeatures(document);
             hideSidebarItems();
-            hideStoriesBar();
         }, 1500);
         setTimeout(() => {
             scanForAdsInDOM(document);
