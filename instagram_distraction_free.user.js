@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Instagram Distraction Free
 // @namespace    http://tampermonkey.net/
-// @version      2.2
+// @version      2.3
 // @description  Remove Sponsored and Suggested posts from Instagram. Supports desktop and iOS/mobile.
 // @author       Lukas Westholt
 // @license      MIT
@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    const LOG_PREFIX = '[IG-Clean v2.2]';
+    const LOG_PREFIX = '[IG-Clean v2.3]';
 
     console.log(`${LOG_PREFIX} initialized.`);
 
@@ -962,84 +962,87 @@
 
     // === DATA FILTERING ===
 
+    // Shared content-filter checks for a single feed node. Used by both filterEdges
+    // (edge.node from the main timeline connection) and filterFeedItems (flat items
+    // from end-of-feed demarcator groups) so the two call sites can't drift apart —
+    // they were previously duplicated and filterFeedItems was missing several checks.
+    function shouldKeepNode(node) {
+        if (!node) return true;
+
+        if (config.removeSponsored) {
+            if (node.ad) {
+                cleanedCount.ads++;
+                return false;
+            }
+            if (node.media?.ad_id || node.media?.is_sponsored === true || node.media?.product_type === 'ad') {
+                cleanedCount.ads++;
+                return false;
+            }
+        }
+
+        if (config.removeSuggested) {
+            if (node.suggested_users) {
+                cleanedCount.suggested++;
+                return false;
+            }
+            if (node.explore_story) {
+                cleanedCount.suggested++;
+                return false;
+            }
+        }
+
+        if (config.filterCollabPosts) {
+            const producers = node.coauthor_producers ?? node.media?.coauthor_producers;
+            if (Array.isArray(producers) && producers.length > 0) {
+                console.log(`${LOG_PREFIX} Removing COLLAB post`);
+                return false;
+            }
+        }
+
+        // ai_label_info.gen_ai_detection_method is non-null for AI posts.
+        // Confirmed values from live HAR: "CLASSIFIER_SCORE_HIGH", "AI_CREATED".
+        if (config.filterAiContent) {
+            const aiInfo = node.ai_label_info ?? node.media?.ai_label_info;
+            if (aiInfo?.gen_ai_detection_method) {
+                console.log(`${LOG_PREFIX} Removing AI post:`, aiInfo.gen_ai_detection_method);
+                return false;
+            }
+        }
+
+        // NOTE: 'Add Yours' sticker detection in main-feed posts is uncertain.
+        // The sticker structure may differ from Stories stickers. Enable this
+        // toggle and check the console — if nothing logs, the field name is wrong.
+        if (config.filterAddYours) {
+            const media = node.media || node;
+            const stickers = media.story_bloks_stickers || media.stickers;
+            if (
+                Array.isArray(stickers) &&
+                stickers.some((s) => s.type === 'add_yours' || s.bloks_sticker?.sticker_type === 'add_yours')
+            ) {
+                console.log(`${LOG_PREFIX} Removing Add Yours post`);
+                return false;
+            }
+        }
+
+        if (config.hideLikeCounts) {
+            const media = node.media || node;
+            media.like_count = null;
+            media.video_view_count = null;
+            media.play_count = null;
+            media.view_count = null;
+            media.fb_like_count = null;
+            media.like_and_view_counts_disabled = true;
+        }
+
+        return true;
+    }
+
     function filterEdges(edges, contextName) {
         if (!Array.isArray(edges)) return edges;
         // Signal to the health-check userscript that the feed timeline key is still valid
         if (edges.length > 0) sessionStorage.setItem('ig_clean_feed_seen', '1');
         const before = edges.length;
-
-        const filtered = edges.filter((edge) => {
-            if (!edge?.node) return true;
-            const node = edge.node;
-
-            if (config.removeSponsored) {
-                if (node.ad) {
-                    cleanedCount.ads++;
-                    return false;
-                }
-                if (node.media?.ad_id || node.media?.is_sponsored === true || node.media?.product_type === 'ad') {
-                    cleanedCount.ads++;
-                    return false;
-                }
-            }
-
-            if (config.removeSuggested) {
-                if (node.suggested_users) {
-                    cleanedCount.suggested++;
-                    return false;
-                }
-                if (node.explore_story) {
-                    cleanedCount.suggested++;
-                    return false;
-                }
-            }
-
-            if (config.filterCollabPosts) {
-                const producers = node.coauthor_producers ?? node.media?.coauthor_producers;
-                if (Array.isArray(producers) && producers.length > 0) {
-                    console.log(`${LOG_PREFIX} Removing COLLAB post`);
-                    return false;
-                }
-            }
-
-            // ai_label_info.gen_ai_detection_method is non-null for AI posts.
-            // Confirmed values from live HAR: "CLASSIFIER_SCORE_HIGH", "AI_CREATED".
-            if (config.filterAiContent) {
-                const aiInfo = node.ai_label_info ?? node.media?.ai_label_info;
-                if (aiInfo?.gen_ai_detection_method) {
-                    console.log(`${LOG_PREFIX} Removing AI post:`, aiInfo.gen_ai_detection_method);
-                    return false;
-                }
-            }
-
-            // NOTE: 'Add Yours' sticker detection in main-feed posts is uncertain.
-            // The sticker structure may differ from Stories stickers. Enable this
-            // toggle and check the console — if nothing logs, the field name is wrong.
-            if (config.filterAddYours) {
-                const media = node.media || node;
-                const stickers = media.story_bloks_stickers || media.stickers;
-                if (
-                    Array.isArray(stickers) &&
-                    stickers.some((s) => s.type === 'add_yours' || s.bloks_sticker?.sticker_type === 'add_yours')
-                ) {
-                    console.log(`${LOG_PREFIX} Removing Add Yours post`);
-                    return false;
-                }
-            }
-
-            if (config.hideLikeCounts) {
-                const media = node.media || node;
-                media.like_count = null;
-                media.video_view_count = null;
-                media.play_count = null;
-                media.view_count = null;
-                media.fb_like_count = null;
-                media.like_and_view_counts_disabled = true;
-            }
-
-            return true;
-        });
-
+        const filtered = edges.filter((edge) => shouldKeepNode(edge?.node));
         if (filtered.length < before) {
             console.log(`${LOG_PREFIX} ${contextName}: ${before} → ${filtered.length}`);
         }
@@ -1049,26 +1052,23 @@
     function filterFeedItems(feedItems, contextName) {
         if (!Array.isArray(feedItems)) return feedItems;
         const before = feedItems.length;
-        const filtered = feedItems.filter((item) => {
-            if (!item) return true;
-            if (config.removeSponsored && item.ad) {
-                cleanedCount.ads++;
-                return false;
-            }
-            if (config.removeSuggested) {
-                if (item.suggested_users) {
-                    cleanedCount.suggested++;
-                    return false;
-                }
-                if (item.explore_story) {
-                    cleanedCount.suggested++;
-                    return false;
-                }
-            }
-            return true;
-        });
+        const filtered = feedItems.filter(shouldKeepNode);
         if (filtered.length < before) console.log(`${LOG_PREFIX} ${contextName}: ${before} → ${filtered.length}`);
         return filtered;
+    }
+
+    // End-of-feed demarcator groups can appear under any of the feed envelope shapes
+    // below; apply the same filtering to whichever ones a given payload actually has.
+    function processEndOfFeedGroups(edges, contextName) {
+        if (!Array.isArray(edges)) return;
+        for (const edge of edges) {
+            const groups = edge?.node?.end_of_feed_demarcator?.group_set?.groups;
+            if (!Array.isArray(groups)) continue;
+            for (const group of groups) {
+                if (group.feed_items)
+                    group.feed_items = filterFeedItems(group.feed_items, `${contextName} (End of Feed)`);
+            }
+        }
     }
 
     function deepCleanFeedData(obj, depth = 0, path = 'root') {
@@ -1103,46 +1103,17 @@
     function cleanFeedData(obj) {
         if (!obj || typeof obj !== 'object') return obj;
 
+        // deepCleanFeedData's recursion into obj/.data/.result already reaches and
+        // filters every known feed-edges envelope below (Main Feed, Feed Pagination,
+        // Preloaded Feed) and clears ad_media_items at every level, so there's no need
+        // to re-run filterEdges over the same (already-filtered) arrays here. Only
+        // end-of-feed demarcator groups still need a dedicated pass, since
+        // deepCleanFeedData doesn't walk into those.
         deepCleanFeedData(obj);
 
-        if (obj.data?.xdt_api__v1__feed__timeline__connection?.edges) {
-            obj.data.xdt_api__v1__feed__timeline__connection.edges = filterEdges(
-                obj.data.xdt_api__v1__feed__timeline__connection.edges,
-                'Main Feed'
-            );
-        }
-        if (obj.xdt_api__v1__feed__timeline__connection?.edges) {
-            obj.xdt_api__v1__feed__timeline__connection.edges = filterEdges(
-                obj.xdt_api__v1__feed__timeline__connection.edges,
-                'Feed (Pagination)'
-            );
-        }
-
-        if (obj.data?.xdt_api__v1__feed__timeline__connection?.edges) {
-            for (const edge of obj.data.xdt_api__v1__feed__timeline__connection.edges) {
-                const groups = edge?.node?.end_of_feed_demarcator?.group_set?.groups;
-                if (Array.isArray(groups)) {
-                    for (const group of groups) {
-                        if (group.feed_items) group.feed_items = filterFeedItems(group.feed_items, 'End of Feed');
-                    }
-                }
-            }
-        }
-
-        if (config.removeSponsored && obj.data?.xdt_injected_story_units?.ad_media_items) {
-            const count = obj.data.xdt_injected_story_units.ad_media_items.length;
-            if (count > 0) {
-                obj.data.xdt_injected_story_units.ad_media_items = [];
-                cleanedCount.ads += count;
-            }
-        }
-
-        if (obj.result?.data?.xdt_api__v1__feed__timeline__connection?.edges) {
-            obj.result.data.xdt_api__v1__feed__timeline__connection.edges = filterEdges(
-                obj.result.data.xdt_api__v1__feed__timeline__connection.edges,
-                'Preloaded Feed'
-            );
-        }
+        processEndOfFeedGroups(obj.data?.xdt_api__v1__feed__timeline__connection?.edges, 'Main Feed');
+        processEndOfFeedGroups(obj.xdt_api__v1__feed__timeline__connection?.edges, 'Feed (Pagination)');
+        processEndOfFeedGroups(obj.result?.data?.xdt_api__v1__feed__timeline__connection?.edges, 'Preloaded Feed');
 
         return obj;
     }
