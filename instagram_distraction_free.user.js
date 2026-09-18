@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Instagram Distraction Free
 // @namespace    http://tampermonkey.net/
-// @version      2.1
+// @version      2.2
 // @description  Remove Sponsored and Suggested posts from Instagram. Supports desktop and iOS/mobile.
 // @author       Lukas Westholt
 // @license      MIT
@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    const LOG_PREFIX = '[IG-Clean v2.1]';
+    const LOG_PREFIX = '[IG-Clean v2.2]';
 
     console.log(`${LOG_PREFIX} initialized.`);
 
@@ -1387,8 +1387,8 @@
     }
 
     // === SPA NAVIGATION HOOK ===
-    // Instagram uses pushState/popState for routing. On back/forward, React replaces
-    // <main> and <nav> entirely, so the existing observer references become detached.
+    // Instagram uses pushState/replaceState/popState for routing. On any of these, React
+    // replaces <main> and <nav> entirely, so the existing observer references become detached.
     // Re-run scans and restart observers after every client-side navigation.
     const onSpaNavigate = () => {
         setTimeout(() => {
@@ -1404,6 +1404,12 @@
     const _origPushState = history.pushState;
     history.pushState = function (...args) {
         _origPushState.apply(this, args);
+        onSpaNavigate();
+    };
+
+    const _origReplaceState = history.replaceState;
+    history.replaceState = function (...args) {
+        _origReplaceState.apply(this, args);
         onSpaNavigate();
     };
 
