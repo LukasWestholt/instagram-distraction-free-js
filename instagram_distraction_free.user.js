@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Instagram Distraction Free
 // @namespace    http://tampermonkey.net/
-// @version      2.2
+// @version      2.3
 // @description  Remove Sponsored and Suggested posts from Instagram. Supports desktop and iOS/mobile.
 // @author       Lukas Westholt
 // @license      MIT
@@ -17,7 +17,7 @@
 (function () {
     'use strict';
 
-    const LOG_PREFIX = '[IG-Clean v2.2]';
+    const LOG_PREFIX = '[IG-Clean v2.3]';
 
     console.log(`${LOG_PREFIX} initialized.`);
 
@@ -160,17 +160,37 @@
             if (name === 'X-FB-Friendly-Name') this._igFriendlyName = value;
             return _origSetHeader.apply(this, arguments);
         };
+
+        // Mirror the fetch path's synthetic-200 behavior instead of just dropping send():
+        // code waiting on onload/onreadystatechange for this XHR would otherwise hang forever.
+        function fakeXhrSuccess(xhr, body) {
+            for (const [prop, value] of Object.entries({
+                readyState: 4,
+                status: 200,
+                statusText: 'OK',
+                response: body,
+                responseText: body,
+            })) {
+                Object.defineProperty(xhr, prop, { value, configurable: true });
+            }
+            setTimeout(() => {
+                xhr.dispatchEvent(new Event('readystatechange'));
+                xhr.dispatchEvent(new Event('load'));
+                xhr.dispatchEvent(new Event('loadend'));
+            }, 0);
+        }
+
         const _origSend = XMLHttpRequest.prototype.send;
         XMLHttpRequest.prototype.send = function (...args) {
-            if (config.suppressErrorReports && this._igUrl?.includes(ERROR_PATH)) return;
-            if (config.suppressClientEvents && this._igUrl?.includes(CLIENT_EVENTS)) return;
+            if (config.suppressErrorReports && this._igUrl?.includes(ERROR_PATH)) return fakeXhrSuccess(this, '');
+            if (config.suppressClientEvents && this._igUrl?.includes(CLIENT_EVENTS)) return fakeXhrSuccess(this, '');
             if (
                 config.blockDMReadReceipts &&
                 this._igUrl?.includes('/api/graphql') &&
                 READ_MUTATIONS.has(this._igFriendlyName)
             ) {
                 console.log(`${LOG_PREFIX} Blocked DM read receipt (XHR):`, this._igFriendlyName);
-                return;
+                return fakeXhrSuccess(this, JSON.stringify({ data: {} }));
             }
             return _origSend.apply(this, args);
         };
